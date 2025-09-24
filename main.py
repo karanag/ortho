@@ -4,12 +4,37 @@ import os
 import shutil
 from pathlib import Path
 
+from typing import Optional
+
+import pycolmap
+
 
 def run(cmd: list[str]):
     print("Running:", " ".join(cmd))
     code = os.system(" ".join(cmd))
     if code != 0:
         raise SystemExit(f"Command failed with exit code {code}: {' '.join(cmd)}")
+
+
+def select_best_reconstruction(sparse_dir: Path) -> tuple[Path, tuple[int, int]]:
+    """Return the reconstruction directory with the most registered images (tie-breaking by points)."""
+    candidates = [d for d in sorted(sparse_dir.iterdir()) if d.is_dir()]
+    if not candidates:
+        raise SystemExit(f"COLMAP mapper did not create any reconstructions under {sparse_dir}")
+
+    best_dir: Optional[Path] = None
+    best_stats = (-1, -1)
+    for candidate in candidates:
+        reconstruction = pycolmap.Reconstruction(str(candidate))
+        stats = (len(reconstruction.images), len(reconstruction.points3D))
+        if stats > best_stats:
+            best_dir = candidate
+            best_stats = stats
+
+    if best_dir is None:
+        raise SystemExit("Unable to select a reconstruction from mapper output.")
+
+    return best_dir, best_stats
 
 
 def main():
@@ -67,7 +92,6 @@ def main():
     db = out / "db.db"
     sparse = out / "sparse"
     dense = out / "dense"
-    model0 = sparse / "0"
     orthomosaic = out / "orthomosaic_colmap.png"
 
     colmap = shutil.which("colmap") or "colmap"
@@ -126,6 +150,12 @@ def main():
         "--Mapper.init_min_num_inliers=60",
     ]
     run(mapper_cmd)
+
+    model0, (num_registered_images, num_points3d) = select_best_reconstruction(sparse)
+    print(
+        f"Selected reconstruction {model0.name} "
+        f"with {num_registered_images} registered images and {num_points3d} points."
+    )
 
     # 4) Undistort + dense stereo
     from orthomosaic import run_dense_reconstruction, build_orthomosaic
