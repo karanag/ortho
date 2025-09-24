@@ -118,7 +118,14 @@ def main():
 
     # 2) Matching
     if args.exhaustive:
-        run([colmap, "exhaustive_matcher", f"--database_path={db}"])
+        run([
+            colmap,
+            "exhaustive_matcher",
+            f"--database_path={db}",
+            "--SiftMatching.guided_matching=1",
+            "--SiftMatching.max_num_matches=50000",
+        ])
+        
     elif args.sequential:
         run([
             colmap,

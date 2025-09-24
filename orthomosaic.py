@@ -1201,6 +1201,8 @@ def build_orthomosaic(
         method = (method or "farneback_slow").lower()
         max_px = max(float(max_px), 0.0)
         overlap = ((ref_mask > 0) & (cur_mask > 0)).astype(np.uint8)
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        overlap = cv2.erode(overlap, k)
         if overlap.sum() < 500:  # too little overlap
             return cur_img
         x, y, w, h = cv2.boundingRect(overlap)

@@ -15,11 +15,12 @@ python3 main.py \
   --exhaustive \
   --blend multiband \
   --bands 8 \
-  --flow-max-px 3 \
-  --stripe-flow-max-px 10 \
+  --flow-max-px 4 \
+  --stripe-flow-max-px 12 \
   --split-stripes \
   --debug-dir outDense/diagnostics \
   --flow-method farneback_slow \
+  --flow-downscale 0.5 \
   --flow-smooth-ksize 21 > console_log.txt 2>&1
 
 echo ">>> Pipeline finished.. Check console_log.txt for the full output."
