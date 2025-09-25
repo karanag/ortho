@@ -84,6 +84,119 @@ def fit_plane_ransac(X: np.ndarray, n_iter: int = 2000, thresh: Optional[float] 
     return n_refined, d_refined, best_inliers
 
 
+def _to_np(u):
+    # OpenCV detail APIs return cv2.UMat sometimes; make sure we have ndarray.
+    return u.get() if isinstance(u, cv2.UMat) else u
+
+def _ensure_binary(m):
+    # masks must be 0/255 uint8
+    m = _to_np(m)
+    m = cv2.threshold(m, 1, 255, cv2.THRESH_BINARY)[1]
+    return m.astype(np.uint8)
+
+def compute_seam_masks_lowres(images_u8, masks_u8, scale=0.3, seam_method="graphcut",
+                              debug_dir: Optional[Path] = None):
+    """
+    images_u8: list of 8-bit BGR tiles already reprojected to a *single plane* (true ortho)
+    masks_u8:  list of 8-bit 0/255 valid-region masks for each tile
+    Returns: list of full-res seam masks (uint8 0/255), one per image
+    """
+    assert len(images_u8) == len(masks_u8) and len(images_u8) > 0
+    if debug_dir is not None:
+        debug_dir = Path(debug_dir)
+        debug_dir.mkdir(parents=True, exist_ok=True)
+
+    # Downscale for fast seam finding
+    imgs_s, msks_s = [], []
+    full_sizes: List[Tuple[int, int]] = []
+    for img, m in zip(images_u8, masks_u8):
+        ih, iw = img.shape[:2]
+        nw, nh = int(iw * scale), int(ih * scale)
+        imgs_s.append(cv2.resize(img.astype(np.float32), (nw, nh)))  # seam-finder wants float32
+        msks_s.append(cv2.resize(_ensure_binary(m), (nw, nh), interpolation=cv2.INTER_NEAREST))
+        full_sizes.append((ih, iw))
+
+    # Choose seam finder
+    if seam_method.lower().startswith("dp"):
+        seam_finder = cv2.detail_DpSeamFinder("COLOR")
+    else:
+        seam_finder = cv2.detail_GraphCutSeamFinder("COST_COLOR_GRAD")
+
+    corners = [(0, 0)] * len(imgs_s)
+    seam_masks_small = seam_finder.find(imgs_s, corners, msks_s)
+
+    # Upscale masks back to full resolution (nearest so they stay binary)
+    seam_masks_full = []
+    for i, sm in enumerate(seam_masks_small):
+        sm = _to_np(sm)
+        ih, iw = full_sizes[i]
+        full_mask = cv2.resize(sm, (iw, ih), interpolation=cv2.INTER_NEAREST).astype(np.uint8)
+        seam_masks_full.append(_ensure_binary(full_mask))
+
+        if debug_dir is not None:
+            out_path = debug_dir / f"seam_mask_{i:02d}.png"
+            cv2.imwrite(str(out_path), full_mask)
+
+    return [_ensure_binary(m) for m in seam_masks_full]
+
+def blend_fullres_with_masks(images_u8, seam_masks_u8, blender="multiband", bands=4, feather_sharpness=0.02,
+                             do_exposure=True):
+    """
+    Blend full-res ortho tiles using *fixed* seam masks.
+    Returns: (mosaic_u8, mosaic_mask_u8)
+    """
+    assert len(images_u8) == len(seam_masks_u8) and len(images_u8) > 0
+    h, w = images_u8[0].shape[:2]
+
+    # (Optional) exposure compensation helps tile lighting differences a bit
+    corners = [(0, 0)] * len(images_u8)
+    if do_exposure:
+        comp = cv2.detail.ExposureCompensator_createDefault(
+    cv2.detail.ExposureCompensator_GAIN_BLOCKS
+        )
+
+        comp.feed(corners, [img.astype(np.int16) for img in images_u8], seam_masks_u8)
+
+    # Pick blender
+    if blender == "feather":
+        b = cv2.detail_FeatherBlender()
+        b.setSharpness(feather_sharpness)
+    else:
+        b = cv2.detail_MultiBandBlender()
+        b.setNumBands(bands)
+
+    b.prepare((0, 0, w, h))
+
+    for i, (img, m) in enumerate(zip(images_u8, seam_masks_u8)):
+        m = _ensure_binary(m)
+        # apply exposure comp before feeding (in place)
+        if do_exposure:
+            comp.apply(i, (0, 0), img, m)
+        b.feed(img, m, (0, 0))
+
+    mosaic, mos_mask = b.blend(None, None)
+    mosaic = np.clip(mosaic, 0, 255).astype(np.uint8)
+    mos_mask = _ensure_binary(mos_mask)
+    return mosaic, mos_mask
+
+def seamhybrid_ortho_blend(images_u8, masks_u8,
+                           seam_scale=0.3, seam_method="graphcut",
+                           blender="multiband", bands=4, feather_sharpness=0.02,
+                           do_exposure=True, debug_dir: Optional[Path] = None):
+    """
+    Convenience wrapper: find seams fast at low-res, upscale, then blend at full-res.
+    """
+    seam_masks = compute_seam_masks_lowres(images_u8, masks_u8,
+                                           scale=seam_scale,
+                                           seam_method=seam_method,
+                                           debug_dir=debug_dir)
+    mosaic, mos_mask = blend_fullres_with_masks(images_u8, seam_masks,
+                                                blender=blender, bands=bands,
+                                                feather_sharpness=feather_sharpness,
+                                                do_exposure=do_exposure)
+    return mosaic, mos_mask
+# ---------------------------------------------------------
+
 def camera_matrix_from_colmap(cam: pycolmap.Camera) -> np.ndarray:
     params = cam.params
     model = cam.model.name
@@ -154,7 +267,13 @@ def build_orthomosaic(
     seam_cost: str = "color",
     seam_gradient_weight: float = 8.0,
     debug_dir: Optional[Path] = None,
+
+    # NEW: pass-through knobs from main.py
+    feather_sharpness: float = 0.02,
+    seam_scale: float = 0.30,
+    seam_method: str = "graphcut",
 ):
+
     rec = pycolmap.Reconstruction(str(sfm_dir))
     pts = [p.xyz for _, p in rec.points3D.items()]
     X = np.array(pts, dtype=float)
@@ -828,17 +947,51 @@ def build_orthomosaic(
                     metrics.append(res)
         return metrics
 
-    def _compose_subset(indices: List[int], warp_list: List[np.ndarray], mask_list: List[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    def _compose_subset(indices: List[int], warp_list: List[np.ndarray], mask_list: List[np.ndarray],
+                        group_label: Optional[str] = None) -> Tuple[np.ndarray, np.ndarray]:
+        if not indices:
+            return np.zeros((out_h, out_w, 3), dtype=np.uint8), np.zeros((out_h, out_w), dtype=np.uint8)
+
+        if len(indices) == 1:
+            idx = indices[0]
+            return warp_list[idx].astype(np.uint8), _ensure_binary(mask_list[idx])
+
+        subset_warps_rgb = [warp_list[i].astype(np.uint8) for i in indices]
+        subset_masks = [_ensure_binary(mask_list[i]) for i in indices]
+
+        seam_dir = None
+        if debug_dir is not None and group_label is not None:
+            seam_dir = debug_dir / f"{group_label}_seams_lowres"
+
+        try:
+            subset_warps_bgr = [cv2.cvtColor(w, cv2.COLOR_RGB2BGR) for w in subset_warps_rgb]
+            mosaic_bgr, mos_mask = seamhybrid_ortho_blend(
+                subset_warps_bgr,
+                [m.copy() for m in subset_masks],
+                seam_scale=seam_scale,
+                seam_method=seam_method,
+                blender="multiband",
+                bands=3,
+                feather_sharpness=feather_sharpness,
+                do_exposure=False,
+                debug_dir=seam_dir,
+            )
+            mosaic_rgb = cv2.cvtColor(mosaic_bgr, cv2.COLOR_BGR2RGB)
+            return mosaic_rgb.astype(np.uint8), _ensure_binary(mos_mask)
+        except Exception as e:
+            print(f"Group seam blend failed ({e}); falling back to distance-weighted average.")
+
+        # Fallback to distance-weighted compose when seamhybrid fails
         acc = np.zeros((out_h, out_w, 3), dtype=np.float64)
         wsum = np.zeros((out_h, out_w), dtype=np.float64)
         union_mask = np.zeros((out_h, out_w), dtype=np.uint8)
         for idx in indices:
-            warped = warp_list[idx]
-            mask = mask_list[idx]
+            warped = warp_list[idx].astype(np.float32)
+            mask = _ensure_binary(mask_list[idx])
             union_mask = cv2.bitwise_or(union_mask, mask)
             dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
             w = dist / (dist.max() + 1e-6) if dist.max() > 0 else (mask > 0).astype(np.float32)
-            acc += warped.astype(np.float64) * w[..., None]
+            acc += warped * w[..., None]
             wsum += w
         wsum[wsum == 0] = 1.0
         mosaic = (acc / wsum[..., None]).clip(0, 255).astype(np.uint8)
@@ -1064,7 +1217,7 @@ def build_orthomosaic(
             except Exception:
                 return None
 
-        seam_masks = _attempt(cv2.detail_GraphCutSeamFinder, ('COST_COLOR',))
+        seam_masks = _attempt(cv2.detail_GraphCutSeamFinder, ('COST_COLOR_GRAD',))
         if seam_masks is None:
             seam_masks = _attempt(cv2.detail_DpSeamFinder, ('COLOR_GRAD',))
         return seam_masks
@@ -1076,9 +1229,12 @@ def build_orthomosaic(
         if seam_masks_before is None:
             print("Seam finder unavailable; falling back to feather-only blending.")
 
+    warps_for_final = [w.copy() for w in warps]
+    masks_for_final = [m.copy() for m in raw_masks]
+
     if split_mode:
-        source_warps = warps[:]
-        source_masks = [m.copy() for m in raw_masks]
+        source_warps = [w.copy() for w in warps_for_final]
+        source_masks = [m.copy() for m in masks_for_final]
         unique_groups = sorted(set(groups.tolist()))
         group_warps: List[np.ndarray] = []
         group_masks: List[np.ndarray] = []
@@ -1087,7 +1243,12 @@ def build_orthomosaic(
             idxs = [i for i, g in enumerate(groups) if g == gid]
             if not idxs:
                 continue
-            mosaic, mask_union = _compose_subset(idxs, source_warps, source_masks)
+            mosaic, mask_union = _compose_subset(
+                idxs,
+                source_warps,
+                source_masks,
+                group_label=f"group{gid_idx}"
+            )
             group_warps.append(mosaic)
             group_masks.append(np.where(mask_union > 0, 255, 0).astype(np.uint8))
             group_names.append(f"group{gid_idx}")
@@ -1377,21 +1538,121 @@ def build_orthomosaic(
                 name_idx = min(idx - 1, len(image_names) - 1)
                 cv2.imwrite(str(debug_dir / f"seam_mask_gradient_{idx:02d}_{image_names[name_idx]}.png"), seam_mask)
 
-    if use_multiband and blender is not None:
-        for warped, mask in zip(warps, masks):
-            blender.feed(warped.astype(np.int16), mask, (0, 0))
-        result, _ = blender.blend(None, None)
-        mosaic = np.clip(result, 0, 255).astype(np.uint8)
+    # --- Hybrid seam-finding + blend ---
+    # --- Final blend dispatch ---
+    if blend_mode == "seamhybrid":
+        # Two-phase: seams at low-res, blend at full-res
+        seam_debug_dir = (debug_dir / "seams_lowres") if debug_dir is not None else None
+        # GraphCut seam logic expects the BGR ordering stored on disk by the debug warps
+        warps_input = warps_for_final if warps_for_final else warps
+        masks_input = masks_for_final if masks_for_final else raw_masks
+        warps_bgr = [cv2.cvtColor(w.astype(np.uint8), cv2.COLOR_RGB2BGR) for w in warps_input]
+        masks_for_seams = [_ensure_binary(m.copy()) for m in masks_input]
+        bands_for_hybrid = 3  # winner_low2high uses 3 bands; keep identical here
+        mosaic = None
+        mos_mask = None
+        try:
+            mosaic_bgr, mos_mask = seamhybrid_ortho_blend(
+                warps_bgr,
+                masks_for_seams,
+                seam_scale=seam_scale,               # ← from signature
+                seam_method=seam_method,             # ← from signature
+                blender="multiband",
+                bands=bands_for_hybrid,
+                feather_sharpness=feather_sharpness, # ← from signature
+                do_exposure=False,
+                debug_dir=seam_debug_dir,
+            )
+            mosaic = cv2.cvtColor(mosaic_bgr, cv2.COLOR_BGR2RGB)
+        except Exception as e:
+            print(f"Hybrid seam blend failed ({e}); falling back to weighted average.")
+            acc = np.zeros((out_h, out_w, 3), dtype=np.float64)
+            wsum = np.zeros((out_h, out_w), dtype=np.float64)
+            for warped, mask in zip(warps, masks):
+                dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
+                w = dist / (dist.max() + 1e-6) if dist.max() > 0 else (mask > 0).astype(np.float32)
+                acc += (warped.astype(np.float64) * w[..., None])
+                wsum += w
+            wsum[wsum == 0] = 1.0
+            mosaic = (acc / wsum[..., None]).clip(0, 255).astype(np.uint8)
+
     else:
-        acc = np.zeros((out_h, out_w, 3), dtype=np.float64)
-        wsum = np.zeros((out_h, out_w), dtype=np.float64)
-        for warped, mask in zip(warps, masks):
-            dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
-            w = dist / (dist.max() + 1e-6) if dist.max() > 0 else (mask > 0).astype(np.float32)
-            acc += (warped.astype(np.float64) * w[..., None])
-            wsum += w
-        wsum[wsum == 0] = 1.0
-        mosaic = (acc / wsum[..., None]).clip(0, 255).astype(np.uint8)
+        # Standard OpenCV blenders
+        if blend_mode == "multiband":
+            if blender is None:
+                # Safety: create a multiband blender if earlier creation failed
+                blender_mb = cv2.detail_MultiBandBlender()
+                blender_mb.setNumBands(max(1, int(num_bands)))
+                blender_mb.prepare((0, 0, out_w, out_h))
+            else:
+                blender_mb = blender
+
+            # If we computed seam masks earlier (seam_masks_before), prefer them
+            active_masks = seam_masks_before if (seam_masks_before is not None) else masks
+
+            # Optional exposure compensation for consistency
+            try:
+                comp = cv2.detail.ExposureCompensator_createDefault(
+    cv2.detail.ExposureCompensator_GAIN_BLOCKS
+)
+
+                comp.feed([(0, 0)]*len(warps), [w.astype(np.int16) for w in warps],
+                        [(_ensure_binary(m)) for m in active_masks])
+                use_comp = True
+            except Exception:
+                use_comp = False
+
+            for i, (img, m) in enumerate(zip(warps, active_masks)):
+                img8 = img.astype(np.uint8)
+                m8 = _ensure_binary(m)
+                if use_comp:
+                    comp.apply(i, (0, 0), img8, m8)
+                blender_mb.feed(img8, m8, (0, 0))
+
+            mosaic, mos_mask = blender_mb.blend(None, None)
+            mosaic = np.clip(mosaic, 0, 255).astype(np.uint8)
+
+        elif blend_mode == "feather":
+            blender_f = cv2.detail_FeatherBlender()
+            blender_f.setSharpness(float(feather_sharpness))
+            blender_f.prepare((0, 0, out_w, out_h))
+
+            # Optional exposure compensation
+            try:
+                comp = cv2.detail.ExposureCompensator_createDefault(
+    cv2.detail.ExposureCompensator_GAIN_BLOCKS
+)
+
+                comp.feed([(0, 0)]*len(warps), [w.astype(np.int16) for w in warps],
+                        [(_ensure_binary(m)) for m in masks])
+                use_comp = True
+            except Exception:
+                use_comp = False
+
+            for i, (img, m) in enumerate(zip(warps, masks)):
+                img8 = img.astype(np.uint8)
+                m8 = _ensure_binary(m)
+                if use_comp:
+                    comp.apply(i, (0, 0), img8, m8)
+                blender_f.feed(img8, m8, (0, 0))
+
+            mosaic, mos_mask = blender_f.blend(None, None)
+            mosaic = np.clip(mosaic, 0, 255).astype(np.uint8)
+
+        else:
+            # (Optional) if you ever wire an 'enfuse' mode, handle it here.
+            # For now, fall back to a simple distance-weighted average.
+            acc = np.zeros((out_h, out_w, 3), dtype=np.float64)
+            wsum = np.zeros((out_h, out_w), dtype=np.float64)
+            for warped, mask in zip(warps, masks):
+                dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
+                w = dist / (dist.max() + 1e-6) if dist.max() > 0 else (mask > 0).astype(np.float32)
+                acc += (warped.astype(np.float64) * w[..., None])
+                wsum += w
+            wsum[wsum == 0] = 1.0
+            mosaic = (acc / wsum[..., None]).clip(0, 255).astype(np.uint8)
+
+
     mosaic_bgr = cv2.cvtColor(mosaic, cv2.COLOR_RGB2BGR)
     cv2.imwrite(str(mosaic_path), mosaic_bgr)
     print(f"Saved orthomosaic to {mosaic_path}")

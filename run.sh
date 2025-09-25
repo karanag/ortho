@@ -13,8 +13,10 @@ python3 main.py \
   --out out \
   --fresh \
   --exhaustive \
-  --blend multiband \
-  --bands 8 \
+  --blend seamhybrid \
+  --bands 4 \
+  --seam-scale 0.30 \
+  --seam-method graphcut \
   --flow-max-px 4 \
   --stripe-flow-max-px 12 \
   --split-stripes \

@@ -3,10 +3,12 @@ import argparse
 import os
 import shutil
 from pathlib import Path
-
 from typing import Optional
 
 import pycolmap
+
+# only orchestrate; all heavy lifting remains in orthomosaic.py
+from orthomosaic import run_dense_reconstruction, build_orthomosaic
 
 
 def run(cmd: list[str]):
@@ -38,51 +40,56 @@ def select_best_reconstruction(sparse_dir: Path) -> tuple[Path, tuple[int, int]]
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Option A: COLMAP SfM + MVS + Orthomosaic")
+    parser = argparse.ArgumentParser(description="COLMAP SfM + MVS + Orthomosaic")
     parser.add_argument("--images", type=Path, default=Path(__file__).resolve().parent / "images")
     parser.add_argument("--out", type=Path, default=Path(__file__).resolve().parent / "output")
+
+    # Matching options
     parser.add_argument("--sequential", action="store_true", help="Use sequential matcher (recommended for sweep/pan)")
     parser.add_argument("--exhaustive", action="store_true", help="Use exhaustive matcher instead of sequential")
     parser.add_argument("--overlap", type=int, default=3, help="Sequential overlap")
-    parser.add_argument("--max_mosaic_px", type=int, default=4000)
-    parser.add_argument("--blend", type=str, default="feather", choices=["multiband", "feather"], help="Blending mode for mosaic")
-    parser.add_argument("--bands", type=int, default=6, help="Number of bands for multiband blender")
-    parser.add_argument("--single_camera", type=int, default=1, help="Set COLMAP ImageReader.single_camera (1 or 0)")
-    parser.add_argument("--fresh", action="store_true", help="Clear existing DB and outputs in --out before running")
-    parser.add_argument("--no-flow-refine", action="store_true", help="Disable optical-flow refinement across overlaps")
+    parser.add_argument("--single_camera", type=int, default=1, help="COLMAP ImageReader.single_camera (1 or 0)")
+
+    # Mosaic & blending
+    parser.add_argument("--max_mosaic_px", type=int, default=4000,
+                        help="Target max width/height of final mosaic (orthorectified)")
+    parser.add_argument("--blend", type=str, default="multiband",
+                        choices=["multiband", "feather", "enfuse", "seamhybrid"],
+                        help="Blending mode for mosaic")
+    parser.add_argument("--bands", type=int, default=6, help="Num bands for multiband blender")
+    parser.add_argument("--feather-sharpness", type=float, default=0.02,
+                        help="Feather blender sharpness (only used if feather blender is selected)")
+
+    # Seam-hybrid knobs (used when --blend seamhybrid)
+    parser.add_argument("--seam-scale", type=float, default=0.30,
+                        help="Downscale for seam finding (e.g., 0.3 = 30%)")
+    parser.add_argument("--seam-method", type=str, default="graphcut",
+                        choices=["graphcut", "dp"], help="Seam finder type for seamhybrid")
+
+    # Optional flow refinement (your existing options)
+    parser.add_argument("--fresh", action="store_true", help="Clear DB and outputs in --out before running")
+    parser.add_argument("--no-flow-refine", action="store_true", help="Disable optical-flow refinement")
     parser.add_argument("--flow-method", type=str, default="farneback_slow",
-                        choices=["farneback_slow", "farneback", "dis"],
-                        help="Optical flow backend for refinement")
-    parser.add_argument("--flow-downscale", type=float, default=1.0,
-                        help="Downscale factor before solving flow ( >1 to downscale )")
-    parser.add_argument("--flow-max-px", type=float, default=2.5,
-                        help="Clamp flow magnitude in pixels to avoid warps")
-    parser.add_argument("--flow-smooth-ksize", type=int, default=13,
-                        help="Gaussian kernel size for smoothing the flow field")
-    parser.add_argument("--split-stripes", action="store_true",
-                        help="Split images into plane stripes before final blending")
-    parser.add_argument("--stripe-threshold", type=float, default=0.5,
-                        help="Minimum separation along plane-v to trigger stripe splitting")
-    parser.add_argument("--stripe-flow-max-px", type=float, default=6.0,
-                        help="Max optical-flow magnitude when refining stripe mosaics")
-    parser.add_argument("--warp-model", type=str, default="homography",
-                        choices=["homography", "apap"],
-                        help="Warp model for mapping images onto the plane")
-    parser.add_argument("--apap-cell-size", type=int, default=80,
-                        help="Cell size in mosaic pixels for APAP mesh evaluation")
-    parser.add_argument("--apap-sigma", type=float, default=120.0,
-                        help="Gaussian falloff sigma (in mosaic pixels) for APAP weighting")
-    parser.add_argument("--apap-min-weight", type=float, default=1e-4,
-                        help="Minimum aggregate weight to trust a local APAP solve")
-    parser.add_argument("--apap-regularization", type=float, default=0.05,
-                        help="Regularization weight pulling APAP back to global homography")
-    parser.add_argument("--seam-cost", type=str, default="color",
-                        choices=["color", "gradient"],
-                        help="Cost model for seam finding in overlap regions")
-    parser.add_argument("--seam-gradient-weight", type=float, default=8.0,
-                        help="Weight applied to gradient magnitude penalty in gradient seam mode")
-    parser.add_argument("--debug-dir", type=Path, default=None,
-                        help="Write per-stage diagnostics to this directory")
+                        choices=["farneback_slow", "farneback", "dis"])
+    parser.add_argument("--flow-downscale", type=float, default=1.0)
+    parser.add_argument("--flow-max-px", type=float, default=2.5)
+    parser.add_argument("--flow-smooth-ksize", type=int, default=13)
+
+    # Stripe splitting & APAP options (existing)
+    parser.add_argument("--split-stripes", action="store_true")
+    parser.add_argument("--stripe-threshold", type=float, default=0.5)
+    parser.add_argument("--stripe-flow-max-px", type=float, default=6.0)
+    parser.add_argument("--warp-model", type=str, default="homography", choices=["homography", "apap"])
+    parser.add_argument("--apap-cell-size", type=int, default=80)
+    parser.add_argument("--apap-sigma", type=float, default=120.0)
+    parser.add_argument("--apap-min-weight", type=float, default=1e-4)
+    parser.add_argument("--apap-regularization", type=float, default=0.05)
+
+    # (Legacy) seam-cost flags your code already had; keep them for back-compat
+    parser.add_argument("--seam-cost", type=str, default="color", choices=["color", "gradient"])
+    parser.add_argument("--seam-gradient-weight", type=float, default=8.0)
+
+    parser.add_argument("--debug-dir", type=Path, default=None)
     args = parser.parse_args()
 
     images = args.images
@@ -92,7 +99,7 @@ def main():
     db = out / "db.db"
     sparse = out / "sparse"
     dense = out / "dense"
-    orthomosaic = out / "orthomosaic_colmap.png"
+    orthomosaic_path = out / "orthomosaic_colmap.png"
 
     colmap = shutil.which("colmap") or "colmap"
 
@@ -119,26 +126,15 @@ def main():
     # 2) Matching
     if args.exhaustive:
         run([
-            colmap,
-            "exhaustive_matcher",
+            colmap, "exhaustive_matcher",
             f"--database_path={db}",
             "--SiftMatching.guided_matching=1",
             "--SiftMatching.max_num_matches=50000",
         ])
-        
-    elif args.sequential:
-        run([
-            colmap,
-            "sequential_matcher",
-            f"--database_path={db}",
-            f"--SequentialMatching.overlap={args.overlap}",
-            "--SiftMatching.use_gpu=1",
-        ])
     else:
-        # default to sequential with overlap if not set explicitly
+        # default to sequential if not explicitly exhaustive
         run([
-            colmap,
-            "sequential_matcher",
+            colmap, "sequential_matcher",
             f"--database_path={db}",
             f"--SequentialMatching.overlap={args.overlap}",
             "--SiftMatching.use_gpu=1",
@@ -146,57 +142,48 @@ def main():
 
     # 3) Incremental mapping
     sparse.mkdir(exist_ok=True)
-    mapper_cmd = [
-        colmap,
-        "mapper",
+    run([
+        colmap, "mapper",
         f"--database_path={db}",
         f"--image_path={images}",
         f"--output_path={sparse}",
         "--Mapper.ba_local_max_num_iterations=50",
         "--Mapper.ba_global_max_num_iterations=100",
         "--Mapper.init_min_num_inliers=60",
-    ]
-    run(mapper_cmd)
+    ])
 
     model0, (num_registered_images, num_points3d) = select_best_reconstruction(sparse)
-    print(
-        f"Selected reconstruction {model0.name} "
-        f"with {num_registered_images} registered images and {num_points3d} points."
-    )
+    print(f"Selected reconstruction {model0.name} with "
+          f"{num_registered_images} registered images and {num_points3d} points.")
 
     # 4) Undistort + dense stereo
-    from orthomosaic import run_dense_reconstruction, build_orthomosaic
-
     dense.mkdir(exist_ok=True)
     run_dense_reconstruction(colmap, images, model0, dense)
 
-    # 5) Orthorectify and mosaic
+    # 5) Orthorectify & mosaic
     undist_sparse = dense / "sparse"
     undist_images = dense / "images"
-    undist_cmd = [
-        colmap,
-        "image_undistorter",
+    run([
+        colmap, "image_undistorter",
         f"--image_path={images}",
         f"--input_path={model0}",
         f"--output_path={dense}",
-        # --- CORRECTED CHANGES ---
-        # This option is valid and good to have.
         "--output_type", "COLMAP",
-        # THIS is the line that was causing the error and has been removed:
-        # "--ImageReader.camera_model", "OPENCV",
-        # This option is also valid and will use the full resolution.
         "--max_image_size=-1",
-    ]
-    run(undist_cmd)
+    ])
 
+    # Delegate to orthomosaic.py; it should implement seamhybrid internally
     build_orthomosaic(
         undist_sparse,
         undist_images,
         model0,
-        orthomosaic,
+        orthomosaic_path,
         target_max_size_px=args.max_mosaic_px,
         blend_mode=args.blend,
         num_bands=args.bands,
+        feather_sharpness=args.feather_sharpness,   # NEW ➜ pass-through
+        seam_scale=args.seam_scale,                 # NEW ➜ pass-through
+        seam_method=args.seam_method,               # NEW ➜ pass-through
         flow_refine=not args.no_flow_refine,
         flow_method=args.flow_method,
         flow_downscale=args.flow_downscale,
@@ -218,28 +205,10 @@ def main():
     print("\nDone. Outputs:")
     print(f"- Sparse model: {model0}")
     print(f"- Dense workspace: {dense}")
-    print(f"- Orthomosaic: {orthomosaic}")
+    print(f"- Orthomosaic: {orthomosaic_path}")
     if args.debug_dir:
         print(f"- Diagnostics: {args.debug_dir}")
 
 
 if __name__ == "__main__":
     main()
-
-
-'''
-python3 main.py \
-  --images ./images/1 \
-  --out run003 \
-  --fresh \
-  --exhaustive \
-  --blend feather \
-  --bands 8 \
-  --flow-max-px 3 \
-  --stripe-flow-max-px 10 \
-  --split-stripes \
-  --debug-dir run003/diagnostics \
-  --flow-method farneback_slow \
-  --flow-smooth-ksize 21
-
-'''
