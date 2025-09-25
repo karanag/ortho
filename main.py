@@ -123,13 +123,15 @@ def main():
     ])
 
     # 2) Matching
+    # 2) Matching
     if args.exhaustive:
         run([
             colmap, "exhaustive_matcher",
             f"--database_path={db}",
             "--FeatureMatching.guided_matching=1",
-            "--SiftMatching.max_num_matches=50000",
+            "--FeatureMatching.max_num_matches=50000",
         ])
+
     else:
         # default to sequential if not explicitly exhaustive
         run([
