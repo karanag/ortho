@@ -127,7 +127,7 @@ def main():
         run([
             colmap, "exhaustive_matcher",
             f"--database_path={db}",
-            "--SiftMatching.guided_matching=1",
+            "--FeatureMatching.guided_matching=1",
             "--SiftMatching.max_num_matches=50000",
         ])
     else:
