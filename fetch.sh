@@ -9,8 +9,8 @@ USER="root"
 
 # --- Files to copy (remote paths) ---
 FILES=(
-    # "/ortho/outDense/diagnostics/diagnostics.json"
-    # "/ortho/outDense/orthomosaic_colmap.png"
+    "/ortho/out/diagnostics.json"
+    "/ortho/out/orthomosaic_colmap.png"
     "/ortho/console_log.txt"
 )
 

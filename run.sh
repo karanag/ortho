@@ -9,7 +9,7 @@ echo ">>> All output will be saved to console_log.txt"
 
 # Execute the main python script and redirect both stdout and stderr to the log file.
 python3 main.py \
-  --images ./images/2 \
+  --images ./images/3 \
   --out out \
   --fresh \
   --exhaustive \

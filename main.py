@@ -10,6 +10,27 @@ import pycolmap
 # only orchestrate; all heavy lifting remains in orthomosaic.py
 from orthomosaic import run_dense_reconstruction, build_orthomosaic
 
+import subprocess
+
+def pick_matching_flags(colmap: str) -> list[str]:
+    """Detect whether to use FeatureMatching.* or SiftMatching.* flags."""
+    try:
+        help_text = subprocess.run(
+            [colmap, "exhaustive_matcher", "--help"],
+            capture_output=True, text=True, check=True
+        ).stdout
+    except Exception:
+        # fallback: assume newer syntax
+        return ["--FeatureMatching.guided_matching=1", "--FeatureMatching.max_num_matches=50000"]
+
+    if "--FeatureMatching.guided_matching" in help_text:
+        # Your Linux/CUDA build
+        return ["--FeatureMatching.guided_matching=1", "--FeatureMatching.max_num_matches=50000"]
+    else:
+        # Your local Mac/Homebrew build
+        return ["--SiftMatching.guided_matching=1", "--SiftMatching.max_num_matches=50000"]
+
+
 
 def run(cmd: list[str]):
     print("Running:", " ".join(cmd))
@@ -124,14 +145,10 @@ def main():
 
     # 2) Matching
     # 2) Matching
+    # 2) Matching
     if args.exhaustive:
-        run([
-            colmap, "exhaustive_matcher",
-            f"--database_path={db}",
-            "--FeatureMatching.guided_matching=1",
-            "--FeatureMatching.max_num_matches=50000",
-        ])
-
+        flags = pick_matching_flags(colmap)
+        run([colmap, "exhaustive_matcher", f"--database_path={db}", *flags])
     else:
         # default to sequential if not explicitly exhaustive
         run([
@@ -139,6 +156,7 @@ def main():
             f"--database_path={db}",
             f"--SequentialMatching.overlap={args.overlap}",
         ])
+
 
     # 3) Incremental mapping
     sparse.mkdir(exist_ok=True)
