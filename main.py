@@ -120,7 +120,6 @@ def main():
         f"--image_path={images}",
         f"--ImageReader.single_camera={args.single_camera}",
         "--ImageReader.camera_model=SIMPLE_RADIAL",
-        "--SiftExtraction.use_gpu=1",
     ])
 
     # 2) Matching
@@ -137,7 +136,6 @@ def main():
             colmap, "sequential_matcher",
             f"--database_path={db}",
             f"--SequentialMatching.overlap={args.overlap}",
-            "--SiftMatching.use_gpu=1",
         ])
 
     # 3) Incremental mapping
