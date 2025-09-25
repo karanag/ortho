@@ -10,6 +10,87 @@ import numpy as np
 import cv2
 import pycolmap  # type: ignore
 
+# --- DENSE HELPERS -----------------------------------------------------------
+def _depth_path_candidates(depth_dir: Path, image_name: str) -> List[Path]:
+    stem = Path(image_name).stem
+    return [
+        depth_dir / f"{stem}.geometric.bin",
+        depth_dir / f"{stem}.photometric.bin",
+        depth_dir / f"{image_name}.geometric.bin",
+        depth_dir / f"{image_name}.photometric.bin",
+        depth_dir / f"{stem}.bin",
+        depth_dir / f"{image_name}.bin",
+    ]
+
+def _read_colmap_depth(depth_path: Path) -> Optional[np.ndarray]:
+    try:
+        # pycolmap can read COLMAP .bin arrays
+        arr = pycolmap.read_array(str(depth_path))  # (H, W) float32, NaN/<=0 invalid
+        return np.asarray(arr, dtype=np.float32)
+    except Exception:
+        return None
+
+def _dense_corr_from_depth(
+    depth: np.ndarray,
+    K: np.ndarray,
+    R_cw: np.ndarray,  # world->cam from COLMAP (cam_from_world)
+    t_cw: np.ndarray,
+    n: np.ndarray, d_plane: float, X0: np.ndarray, u_axis: np.ndarray, v_axis: np.ndarray,
+    step: int = 8, max_samples: int = 250_000
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Returns (plane_raw Nx2, image_uv Nx2, height Nx1) from depth samples.
+    - plane_raw: [u,v] in plane coords
+    - image_uv: [x,y] in image (undistorted) pixels
+    - height: signed distance to plane (n·X + d)
+    """
+    H, W = depth.shape
+    # sample a grid to keep compute affordable
+    ys = np.arange(0, H, step, dtype=np.int32)
+    xs = np.arange(0, W, step, dtype=np.int32)
+    Xg, Yg = np.meshgrid(xs, ys)
+    us = Xg.ravel(); vs = Yg.ravel()
+    ds = depth[vs, us].reshape(-1)
+    valid = np.isfinite(ds) & (ds > 0)
+    if not np.any(valid):
+        return (np.zeros((0, 2), dtype=float),
+                np.zeros((0, 2), dtype=float),
+                np.zeros((0,), dtype=float))
+    us = us[valid].astype(np.float32)
+    vs = vs[valid].astype(np.float32)
+    ds = ds[valid].astype(np.float32)
+
+    # Backproject to camera then to world
+    Kinv = np.linalg.inv(K)
+    pix_h = np.stack([us, vs, np.ones_like(us)], axis=0)  # 3xN
+    rays = Kinv @ pix_h                                   # normalized rays
+    X_cam = rays * ds                                     # 3xN
+    R_wc = R_cw.T
+    t_wc = -R_wc @ t_cw
+    X_w = (R_wc @ X_cam).T + t_wc[None, :]                # Nx3
+
+    # Plane height and in-plane coords
+    height = (X_w @ n + d_plane)                          # Nx
+    X_proj = X_w - height[:, None] * n[None, :]
+    uv = X_proj - X0[None, :]
+    u_vals = uv @ u_axis
+    v_vals = uv @ v_axis
+
+    # (Optional) cap extreme heights to reduce outlier influence
+    # keep all; APAP weighting will be local anyway.
+
+    # Downsample if too many
+    N = u_vals.shape[0]
+    if N > max_samples:
+        idx = np.random.default_rng(0).choice(N, size=max_samples, replace=False)
+        u_vals = u_vals[idx]; v_vals = v_vals[idx]
+        us = us[idx]; vs = vs[idx]
+        height = height[idx]
+
+    plane_raw = np.stack([u_vals, v_vals], axis=1).astype(np.float32)
+    img_uv = np.stack([us, vs], axis=1).astype(np.float32)
+    return plane_raw, img_uv, height.astype(np.float32)
+
 
 def run_dense_reconstruction(colmap_bin: str, image_dir: Path, sfm_dir: Path, dense_dir: Path):
     undist_cmd = [
@@ -417,6 +498,61 @@ def build_orthomosaic(
             "image": np.array(corr_image, dtype=float) if corr_image else np.zeros((0, 2), dtype=float),
             "height": np.array(corr_height, dtype=float) if corr_height else np.zeros((0,), dtype=float),
         }
+
+
+        # Try to upgrade correspondences using DENSE depth maps (if available)
+    dense_root = undistorted_sparse_dir.parent / "stereo" / "depth_maps"
+    dense_upgraded = 0
+    if dense_root.exists():
+        for entry in img_entries:
+            name = entry["name"]
+            path = entry["path"]
+            if not path.exists():
+                continue
+            # locate depth
+            depth_path = None
+            for cand in _depth_path_candidates(dense_root, name):
+                if cand.exists():
+                    depth_path = cand
+                    break
+            if depth_path is None:
+                continue
+            depth = _read_colmap_depth(depth_path)
+            if depth is None or depth.size == 0:
+                continue
+
+            # camera & pose for this undistorted image
+            img_u = undist_rec.images[name] if name in undist_rec.images else None
+            if img_u is None:
+                continue
+            cam = undist_rec.cameras[img_u.camera_id]
+            K = camera_matrix_from_colmap(cam)
+            T = img_u.cam_from_world
+            T = T() if callable(T) else T
+            R_cw = _ensure_numpy_rotation(T)      # NOTE: cam_from_world (world->cam)
+            t_cw = _ensure_numpy_translation(T)
+
+            # build dense correspondences on the plane
+            plane_raw, img_uv, heights = _dense_corr_from_depth(
+                depth, K, R_cw, t_cw, n, d, X0, u_axis, v_axis,
+                step=8, max_samples=250_000
+            )
+            if plane_raw.shape[0] < 4:
+                continue
+
+            # Save into image_correspondences (override sparse for this image)
+            image_correspondences[name] = {
+                "plane_raw": plane_raw,
+                "image": img_uv,
+                "height": heights,
+            }
+            dense_upgraded += 1
+
+    if dense_upgraded > 0:
+        print(f"Dense depth available: upgraded correspondences for {dense_upgraded}/{len(img_entries)} images.")
+    else:
+        print("Dense depth not found or unreadable; using sparse correspondences.")
+
 
     if not corners_all:
         raise RuntimeError("No undistorted images found for mosaic.")
