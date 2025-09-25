@@ -1,46 +1,46 @@
-I0925 10:36:16.217217 15064 misc.cc:44] 
+I0925 10:38:58.917377 15296 misc.cc:44] 
 ==============================================================================
 Feature extraction
 ==============================================================================
-I0925 10:36:16.226351 15161 sift.cc:720] Creating SIFT GPU feature extractor
-I0925 10:36:16.637527 15162 feature_extraction.cc:260] Processed file [1/6]
-I0925 10:36:16.637603 15162 feature_extraction.cc:263]   Name:            1.jpeg
-I0925 10:36:16.637615 15162 feature_extraction.cc:272]   Dimensions:      3840 x 2160
-I0925 10:36:16.637626 15162 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
-I0925 10:36:16.637637 15162 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
-I0925 10:36:16.637657 15162 feature_extraction.cc:282]   Features:        9442 (SIFT)
-I0925 10:36:16.746805 15162 feature_extraction.cc:260] Processed file [2/6]
-I0925 10:36:16.746835 15162 feature_extraction.cc:263]   Name:            2.jpeg
-I0925 10:36:16.746845 15162 feature_extraction.cc:272]   Dimensions:      3840 x 2160
-I0925 10:36:16.746853 15162 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
-I0925 10:36:16.746862 15162 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
-I0925 10:36:16.746876 15162 feature_extraction.cc:282]   Features:        8862 (SIFT)
-I0925 10:36:16.752878 15162 feature_extraction.cc:260] Processed file [3/6]
-I0925 10:36:16.752898 15162 feature_extraction.cc:263]   Name:            3.jpeg
-I0925 10:36:16.752907 15162 feature_extraction.cc:272]   Dimensions:      3840 x 2160
-I0925 10:36:16.752914 15162 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
-I0925 10:36:16.752923 15162 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
-I0925 10:36:16.752933 15162 feature_extraction.cc:282]   Features:        11192 (SIFT)
-I0925 10:36:16.790359 15162 feature_extraction.cc:260] Processed file [4/6]
-I0925 10:36:16.790403 15162 feature_extraction.cc:263]   Name:            4.jpeg
-I0925 10:36:16.790412 15162 feature_extraction.cc:272]   Dimensions:      3840 x 2160
-I0925 10:36:16.790421 15162 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
-I0925 10:36:16.790428 15162 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
-I0925 10:36:16.790442 15162 feature_extraction.cc:282]   Features:        10752 (SIFT)
-I0925 10:36:16.834287 15162 feature_extraction.cc:260] Processed file [5/6]
-I0925 10:36:16.834340 15162 feature_extraction.cc:263]   Name:            5.jpeg
-I0925 10:36:16.834352 15162 feature_extraction.cc:272]   Dimensions:      3840 x 2160
-I0925 10:36:16.834362 15162 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
-I0925 10:36:16.834372 15162 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
-I0925 10:36:16.834388 15162 feature_extraction.cc:282]   Features:        10869 (SIFT)
-I0925 10:36:16.878520 15162 feature_extraction.cc:260] Processed file [6/6]
-I0925 10:36:16.878573 15162 feature_extraction.cc:263]   Name:            6.jpeg
-I0925 10:36:16.878585 15162 feature_extraction.cc:272]   Dimensions:      3840 x 2160
-I0925 10:36:16.878595 15162 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
-I0925 10:36:16.878605 15162 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
-I0925 10:36:16.878623 15162 feature_extraction.cc:282]   Features:        11290 (SIFT)
-I0925 10:36:16.991281 15064 timer.cc:90] Elapsed time: 0.013 [minutes]
-E0925 10:36:17.094449 15165 option_manager.cc:970] Failed to parse options - unrecognised option '--SiftMatching.guided_matching=1'.
+I0925 10:38:58.924887 15393 sift.cc:720] Creating SIFT GPU feature extractor
+I0925 10:38:59.341096 15394 feature_extraction.cc:260] Processed file [1/6]
+I0925 10:38:59.341184 15394 feature_extraction.cc:263]   Name:            1.jpeg
+I0925 10:38:59.341197 15394 feature_extraction.cc:272]   Dimensions:      3840 x 2160
+I0925 10:38:59.341207 15394 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
+I0925 10:38:59.341218 15394 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
+I0925 10:38:59.341238 15394 feature_extraction.cc:282]   Features:        9442 (SIFT)
+I0925 10:38:59.446098 15394 feature_extraction.cc:260] Processed file [2/6]
+I0925 10:38:59.446142 15394 feature_extraction.cc:263]   Name:            2.jpeg
+I0925 10:38:59.446156 15394 feature_extraction.cc:272]   Dimensions:      3840 x 2160
+I0925 10:38:59.446166 15394 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
+I0925 10:38:59.446177 15394 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
+I0925 10:38:59.446197 15394 feature_extraction.cc:282]   Features:        8862 (SIFT)
+I0925 10:38:59.453473 15394 feature_extraction.cc:260] Processed file [3/6]
+I0925 10:38:59.453506 15394 feature_extraction.cc:263]   Name:            3.jpeg
+I0925 10:38:59.453516 15394 feature_extraction.cc:272]   Dimensions:      3840 x 2160
+I0925 10:38:59.453526 15394 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
+I0925 10:38:59.453536 15394 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
+I0925 10:38:59.453549 15394 feature_extraction.cc:282]   Features:        11192 (SIFT)
+I0925 10:38:59.486832 15394 feature_extraction.cc:260] Processed file [4/6]
+I0925 10:38:59.486886 15394 feature_extraction.cc:263]   Name:            4.jpeg
+I0925 10:38:59.486896 15394 feature_extraction.cc:272]   Dimensions:      3840 x 2160
+I0925 10:38:59.486907 15394 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
+I0925 10:38:59.486917 15394 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
+I0925 10:38:59.486934 15394 feature_extraction.cc:282]   Features:        10752 (SIFT)
+I0925 10:38:59.527374 15394 feature_extraction.cc:260] Processed file [5/6]
+I0925 10:38:59.527429 15394 feature_extraction.cc:263]   Name:            5.jpeg
+I0925 10:38:59.527441 15394 feature_extraction.cc:272]   Dimensions:      3840 x 2160
+I0925 10:38:59.527451 15394 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
+I0925 10:38:59.527462 15394 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
+I0925 10:38:59.527477 15394 feature_extraction.cc:282]   Features:        10869 (SIFT)
+I0925 10:38:59.611028 15394 feature_extraction.cc:260] Processed file [6/6]
+I0925 10:38:59.611083 15394 feature_extraction.cc:263]   Name:            6.jpeg
+I0925 10:38:59.611094 15394 feature_extraction.cc:272]   Dimensions:      3840 x 2160
+I0925 10:38:59.611104 15394 feature_extraction.cc:275]   Camera:          #1 - SIMPLE_RADIAL
+I0925 10:38:59.611114 15394 feature_extraction.cc:278]   Focal Length:    2647.36px (Prior)
+I0925 10:38:59.611131 15394 feature_extraction.cc:282]   Features:        11290 (SIFT)
+I0925 10:38:59.722707 15296 timer.cc:90] Elapsed time: 0.013 [minutes]
+E0925 10:38:59.825529 15397 option_manager.cc:970] Failed to parse options - unrecognised option '--SiftMatching.max_num_matches=50000'.
 Running: /usr/local/bin/colmap feature_extractor --database_path=out/db.db --image_path=images/2 --ImageReader.single_camera=1 --ImageReader.camera_model=SIMPLE_RADIAL
-Running: /usr/local/bin/colmap exhaustive_matcher --database_path=out/db.db --SiftMatching.guided_matching=1 --SiftMatching.max_num_matches=50000
-Command failed with exit code 256: /usr/local/bin/colmap exhaustive_matcher --database_path=out/db.db --SiftMatching.guided_matching=1 --SiftMatching.max_num_matches=50000
+Running: /usr/local/bin/colmap exhaustive_matcher --database_path=out/db.db --FeatureMatching.guided_matching=1 --SiftMatching.max_num_matches=50000
+Command failed with exit code 256: /usr/local/bin/colmap exhaustive_matcher --database_path=out/db.db --FeatureMatching.guided_matching=1 --SiftMatching.max_num_matches=50000
