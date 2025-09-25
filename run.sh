@@ -10,7 +10,7 @@ echo ">>> All output will be saved to console_log.txt"
 # Execute the main python script and redirect both stdout and stderr to the log file.
 python3 main.py \
   --images ./images/2 \
-  --out outDense \
+  --out out \
   --fresh \
   --exhaustive \
   --blend multiband \
@@ -18,9 +18,10 @@ python3 main.py \
   --flow-max-px 4 \
   --stripe-flow-max-px 12 \
   --split-stripes \
-  --debug-dir outDense/diagnostics \
+  --debug-dir out \
   --flow-method farneback_slow \
   --flow-downscale 0.5 \
-  --flow-smooth-ksize 21 > console_log.txt 2>&1
+  --flow-smooth-ksize 21 \
+  > console_log.txt 2>&1
 
 echo ">>> Pipeline finished.. Check console_log.txt for the full output."
