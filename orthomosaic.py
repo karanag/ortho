@@ -220,7 +220,7 @@ def homography_img_to_plane(K: np.ndarray, R_wc: np.ndarray, t_wc: np.ndarray, X
     H_i2p = np.linalg.inv(H_p2i)
     return H_i2p
 
-def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path, sfm_dir: Path, mosaic_path: Path, target_max_size_px: int=8000, blend_mode: str='feather', num_bands: int=6, flow_refine: bool=True, flow_method: str='farneback_slow', flow_downscale: float=1.0, flow_max_px: float=2.5, flow_smooth_ksize: int=13, split_stripes: bool=False, stripe_threshold: float=0.5, stripe_flow_max_px: float=6.0, warp_model: str='homography', apap_cell_size: int=80, apap_sigma: float=120.0, apap_min_weight: float=0.0001, apap_regularization: float=0.05, seam_cost: str='color', seam_gradient_weight: float=8.0, debug_dir: Optional[Path]=None, feather_sharpness: float=0.02, seam_scale: float=0.3, seam_method: str='graphcut'):
+def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path, sfm_dir: Path, mosaic_path: Path, target_max_size_px: int=8000, blend_mode: str='feather', num_bands: int=6, flow_refine: bool=True, flow_method: str='farneback_slow', flow_downscale: float=1.0, flow_max_px: float=2.5, flow_smooth_ksize: int=13, split_stripes: bool=False, stripe_threshold: float=0.5, stripe_flow_max_px: float=6.0, warp_model: str='homography', apap_cell_size: int=80, apap_sigma: float=120.0, apap_min_weight: float=0.0001, apap_regularization: float=0.05, seam_cost: str='color', seam_gradient_weight: float=8.0, debug_dir: Optional[Path]=None, feather_sharpness: float=0.02, seam_scale: float=0.3, seam_method: str='graphcut', remove_background: bool=False, background_token_file: Optional[Path]=None, background_retries: int=2, background_retry_delay: float=2.0, color_harmonize: bool=False, harmonize_output_dir: Optional[Path]=None):
     rec = pycolmap.Reconstruction(str(sfm_dir))
     pts = [p.xyz for _, p in rec.points3D.items()]
     X = np.array(pts, dtype=float)
@@ -648,6 +648,115 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
             mask_path = debug_dir / f'mask_{len(warps):02d}_{name}.png'
             cv2.imwrite(str(warp_path), cv2.cvtColor(warped, cv2.COLOR_RGB2BGR))
             cv2.imwrite(str(mask_path), mask)
+
+    def _mask_to_alpha(mask: np.ndarray) -> np.ndarray:
+        return np.where(mask > 0, 255, 0).astype(np.uint8)
+
+    def _warp_to_bgra(rgb_img: np.ndarray, mask_img: np.ndarray) -> np.ndarray:
+        bgr = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)
+        alpha = _mask_to_alpha(mask_img)
+        return np.dstack([bgr, alpha])
+
+    def _shrink_mask(mask: np.ndarray, ksize: int=5) -> np.ndarray:
+        try:
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ksize, ksize))
+            return cv2.erode(mask, kernel)
+        except Exception:
+            return mask
+
+    final_bgra: Optional[List[np.ndarray]] = None
+    harmonized_ref = -1
+    background_updated = False
+    if (remove_background or color_harmonize) and warps:
+        base_bgra = [_warp_to_bgra(warps[idx], masks[idx]) for idx in range(len(warps))]
+        if remove_background:
+            try:
+                from bg import remove_background_batch
+            except ImportError:
+                print('Background removal requested, but bg module is unavailable. Skipping background removal step.')
+                if color_harmonize:
+                    final_bgra = base_bgra.copy()
+            else:
+                valid_indices = [idx for idx, m in enumerate(masks) if int(m.sum()) > 0]
+                if not valid_indices:
+                    print('Background removal skipped: no valid mask coverage across warped tiles.')
+                    if color_harmonize:
+                        final_bgra = base_bgra.copy()
+                else:
+                    warps_bgr = [cv2.cvtColor(warps[idx], cv2.COLOR_RGB2BGR) for idx in valid_indices]
+                    names_for_api = [f'{idx:02d}_{image_names[idx]}.png' for idx in valid_indices]
+                    save_dir = (debug_dir / 'bg_removed') if debug_dir is not None else None
+                    batch_kwargs = {
+                        'images_bgr': warps_bgr,
+                        'names': names_for_api,
+                        'retries': background_retries,
+                        'delay': background_retry_delay,
+                        'save_dir': save_dir,
+                        'verbose': True,
+                    }
+                    if background_token_file is not None:
+                        batch_kwargs['token_file'] = str(background_token_file)
+                    bg_results = remove_background_batch(**batch_kwargs)
+                    final_bgra = base_bgra.copy()
+                    for idx, result in zip(valid_indices, bg_results):
+                        if result is None:
+                            continue
+                        if result.ndim == 2:
+                            result = cv2.cvtColor(result, cv2.COLOR_GRAY2BGRA)
+                        elif result.shape[2] == 3:
+                            result = cv2.cvtColor(result, cv2.COLOR_BGR2BGRA)
+                        final_bgra[idx] = result
+                        background_updated = True
+        if color_harmonize:
+            try:
+                from auto_tune import harmonize_images
+            except ImportError:
+                print('Color harmonization requested, but auto_tune module is unavailable. Skipping color correction.')
+                if final_bgra is None:
+                    final_bgra = base_bgra.copy()
+            else:
+                if final_bgra is None:
+                    final_bgra = base_bgra.copy()
+                harmonize_dir = harmonize_output_dir
+                if harmonize_dir is None and debug_dir is not None:
+                    harmonize_dir = debug_dir / 'harmonized_auto'
+                names_for_harmonize = [f'{idx:02d}_{name}.png' for idx, name in enumerate(image_names)]
+                final_bgra, harmonized_ref = harmonize_images(
+                    final_bgra,
+                    names=names_for_harmonize,
+                    out_root=harmonize_dir,
+                )
+                if 0 <= harmonized_ref < len(image_names):
+                    print(f'Harmonization reference tile: index {harmonized_ref} ({image_names[harmonized_ref]})')
+        if final_bgra is None and remove_background:
+            final_bgra = base_bgra.copy()
+        if final_bgra is not None:
+            new_warps: List[np.ndarray] = []
+            new_masks: List[np.ndarray] = []
+            for idx, bgra in enumerate(final_bgra):
+                if bgra is None:
+                    new_warps.append(warps[idx])
+                    new_masks.append(raw_masks[idx])
+                    continue
+                if bgra.ndim == 2:
+                    bgra = cv2.cvtColor(bgra, cv2.COLOR_GRAY2BGRA)
+                elif bgra.shape[2] == 3:
+                    bgra = cv2.cvtColor(bgra, cv2.COLOR_BGR2BGRA)
+                bgr = bgra[:, :, :3]
+                alpha = bgra[:, :, 3]
+                if background_updated:
+                    alpha_mask = _mask_to_alpha(alpha)
+                    combined_mask = cv2.bitwise_and(alpha_mask, masks[idx])
+                    combined_mask = _shrink_mask(combined_mask, ksize=5)
+                else:
+                    combined_mask = masks[idx].copy()
+                rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+                new_warps.append(rgb)
+                new_masks.append(combined_mask)
+            warps = new_warps
+            masks = new_masks
+            raw_masks = [m.copy() for m in new_masks]
+            warp_grays = [cv2.cvtColor(w, cv2.COLOR_RGB2GRAY) for w in new_warps]
     if warp_model == 'apap' and apap_diagnostics:
         print('APAP warp diagnostics:')
         for rec in apap_diagnostics:

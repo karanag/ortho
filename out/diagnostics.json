@@ -75,152 +75,152 @@
     {
       "image_i": "3A.jpeg",
       "image_j": "3B.jpeg",
-      "shift_x": -0.1508037416889465,
-      "shift_y": 0.03142965621827898,
-      "shift_mag": 0.15404412289141609,
-      "phase_corr_response": 0.8027250528335571,
-      "mae": 39.294403076171875,
-      "overlap_px": 2523223
+      "shift_x": 0.39378159233888255,
+      "shift_y": 0.009675036897874634,
+      "shift_mag": 0.393900430063133,
+      "phase_corr_response": 0.811880068359375,
+      "mae": 16.608095169067383,
+      "overlap_px": 2460523
     },
     {
       "image_i": "3A.jpeg",
       "image_j": "2A.jpeg",
-      "shift_x": 0.8545239081850013,
-      "shift_y": -0.21036170511047203,
-      "shift_mag": 0.8800358837210867,
-      "phase_corr_response": 0.7801559228138342,
-      "mae": 36.33963394165039,
-      "overlap_px": 2440728
+      "shift_x": 0.8984948011350298,
+      "shift_y": 0.3692842190284864,
+      "shift_mag": 0.9714235647183755,
+      "phase_corr_response": 0.8176837874549897,
+      "mae": 19.890518188476562,
+      "overlap_px": 2087538
     },
     {
       "image_i": "3A.jpeg",
       "image_j": "2B.jpeg",
-      "shift_x": 0.163232983898979,
-      "shift_y": 0.026072687880855483,
-      "shift_mag": 0.16530212365815766,
-      "phase_corr_response": 0.6992147561576632,
-      "mae": 33.21564483642578,
-      "overlap_px": 1725981
+      "shift_x": 0.1669300938572178,
+      "shift_y": 0.02286084864294935,
+      "shift_mag": 0.16848820325427946,
+      "phase_corr_response": 0.70448643664519,
+      "mae": 21.45990753173828,
+      "overlap_px": 1715393
     },
     {
       "image_i": "3A.jpeg",
       "image_j": "1B.jpeg",
-      "shift_x": -1.2058155640034158,
-      "shift_y": 0.6218323150226297,
-      "shift_mag": 1.3567116872789438,
-      "phase_corr_response": 0.5169236373018335,
-      "mae": 43.054405212402344,
-      "overlap_px": 648168
+      "shift_x": -1.0810890850447379,
+      "shift_y": 0.46308730042062507,
+      "shift_mag": 1.17609670419304,
+      "phase_corr_response": 0.5157393183237241,
+      "mae": 36.389739990234375,
+      "overlap_px": 640262
     },
     {
       "image_i": "3A.jpeg",
       "image_j": "1A.jpeg",
-      "shift_x": -2.038862780753533,
-      "shift_y": -0.15922141911607923,
-      "shift_mag": 2.045070389753704,
-      "phase_corr_response": 0.42173209834346065,
-      "mae": 52.844032287597656,
-      "overlap_px": 529255
+      "shift_x": -1.9889023566789206,
+      "shift_y": -0.6629563460979853,
+      "shift_mag": 2.096483651554325,
+      "phase_corr_response": 0.4556353284007728,
+      "mae": 42.047481536865234,
+      "overlap_px": 477258
     },
     {
       "image_i": "3B.jpeg",
       "image_j": "2A.jpeg",
-      "shift_x": 0.12447762235740356,
-      "shift_y": -0.011055476347451076,
-      "shift_mag": 0.12496760390205706,
-      "phase_corr_response": 0.7284410108681079,
-      "mae": 43.48536682128906,
-      "overlap_px": 2025230
+      "shift_x": 0.12102329394394928,
+      "shift_y": -0.007757732252002825,
+      "shift_mag": 0.12127167883202293,
+      "phase_corr_response": 0.7363895951377021,
+      "mae": 20.77869415283203,
+      "overlap_px": 2013756
     },
     {
       "image_i": "3B.jpeg",
       "image_j": "2B.jpeg",
-      "shift_x": -0.042787873396832765,
-      "shift_y": -0.34676789569698485,
-      "shift_mag": 0.34939773267143326,
-      "phase_corr_response": 0.7965879519780477,
-      "mae": 37.304962158203125,
-      "overlap_px": 2861942
+      "shift_x": 0.010369598410989056,
+      "shift_y": 0.2425334871435325,
+      "shift_mag": 0.24275506371074373,
+      "phase_corr_response": 0.8307551127115885,
+      "mae": 17.664142608642578,
+      "overlap_px": 2416053
     },
     {
       "image_i": "3B.jpeg",
       "image_j": "1B.jpeg",
-      "shift_x": -0.42750108065177983,
-      "shift_y": -0.7184332228279118,
-      "shift_mag": 0.8360044674649408,
-      "phase_corr_response": 0.5392343604319381,
-      "mae": 53.46024703979492,
-      "overlap_px": 1211219
+      "shift_x": -0.9169789506651114,
+      "shift_y": -0.734968992748918,
+      "shift_mag": 1.175172249615029,
+      "phase_corr_response": 0.5401025867226683,
+      "mae": 33.421329498291016,
+      "overlap_px": 1083435
     },
     {
       "image_i": "3B.jpeg",
       "image_j": "1A.jpeg",
-      "shift_x": -1.0395164488318756,
-      "shift_y": -0.9967308689157335,
-      "shift_mag": 1.4401620993629662,
-      "phase_corr_response": 0.4504798291524251,
-      "mae": 59.706600189208984,
-      "overlap_px": 751307
+      "shift_x": -1.0231845280607104,
+      "shift_y": -0.9925948517092138,
+      "shift_mag": 1.4255353794636085,
+      "phase_corr_response": 0.44747826006677416,
+      "mae": 38.955970764160156,
+      "overlap_px": 743381
     },
     {
       "image_i": "2A.jpeg",
       "image_j": "2B.jpeg",
-      "shift_x": -0.14371836981536035,
-      "shift_y": -0.1685994229650305,
-      "shift_mag": 0.2215417234891115,
-      "phase_corr_response": 0.8599601651415413,
-      "mae": 30.947786331176758,
-      "overlap_px": 1946508
+      "shift_x": -0.1431421467804057,
+      "shift_y": -0.1768431453286894,
+      "shift_mag": 0.22751521319385912,
+      "phase_corr_response": 0.8714562633514404,
+      "mae": 14.915647506713867,
+      "overlap_px": 1935250
     },
     {
       "image_i": "2A.jpeg",
       "image_j": "1B.jpeg",
-      "shift_x": -0.5461371044683005,
-      "shift_y": -0.10322210404217458,
-      "shift_mag": 0.555806206910208,
-      "phase_corr_response": 0.731470008249636,
-      "mae": 32.79640197753906,
-      "overlap_px": 1146272
+      "shift_x": -0.5471315545534026,
+      "shift_y": -0.10009033384858412,
+      "shift_mag": 0.5562113024003953,
+      "phase_corr_response": 0.7365498719392,
+      "mae": 24.716102600097656,
+      "overlap_px": 1137384
     },
     {
       "image_i": "2A.jpeg",
       "image_j": "1A.jpeg",
-      "shift_x": -0.9199906609953246,
-      "shift_y": -0.19953730073689258,
-      "shift_mag": 0.9413808744094917,
-      "phase_corr_response": 0.621216062093099,
-      "mae": 39.50779342651367,
-      "overlap_px": 1316484
+      "shift_x": -0.30768994948886075,
+      "shift_y": -0.3217500358480265,
+      "shift_mag": 0.44519230741856275,
+      "phase_corr_response": 0.6663561508325229,
+      "mae": 29.39276695251465,
+      "overlap_px": 1164397
     },
     {
       "image_i": "2B.jpeg",
       "image_j": "1B.jpeg",
-      "shift_x": 0.09505950722456191,
-      "shift_y": -0.26962644073614683,
-      "shift_mag": 0.2858928601029054,
-      "phase_corr_response": 0.8130012264847756,
-      "mae": 41.40829849243164,
-      "overlap_px": 1392490
+      "shift_x": 0.08212776340042183,
+      "shift_y": -0.33100923073334343,
+      "shift_mag": 0.3410455693185816,
+      "phase_corr_response": 0.807596235148112,
+      "mae": 24.674711227416992,
+      "overlap_px": 1246984
     },
     {
       "image_i": "2B.jpeg",
       "image_j": "1A.jpeg",
-      "shift_x": -0.2383396923613077,
-      "shift_y": -0.731505396437683,
-      "shift_mag": 0.7693542447873635,
-      "phase_corr_response": 0.6704408161179028,
-      "mae": 47.76741027832031,
-      "overlap_px": 791384
+      "shift_x": -0.23851626198154463,
+      "shift_y": -0.7294946469557999,
+      "shift_mag": 0.7674975225802465,
+      "phase_corr_response": 0.6723745290497203,
+      "mae": 32.02113342285156,
+      "overlap_px": 783787
     },
     {
       "image_i": "1B.jpeg",
       "image_j": "1A.jpeg",
-      "shift_x": -0.17289235709029072,
-      "shift_y": 2.040457889149934,
-      "shift_mag": 2.047769558454867,
-      "phase_corr_response": 0.7331566416775739,
-      "mae": 33.55411911010742,
-      "overlap_px": 2115748
+      "shift_x": -0.12792529992850632,
+      "shift_y": 1.9620605049314008,
+      "shift_mag": 1.9662264130494895,
+      "phase_corr_response": 0.729972958087267,
+      "mae": 16.769485473632812,
+      "overlap_px": 1791477
     }
   ],
   "pairwise_alignment_after": [],
@@ -350,31 +350,31 @@
     {
       "image_i": "group0",
       "image_j": "group1",
-      "shift_x": 0.40350457346494295,
-      "shift_y": 0.7367664233834148,
-      "shift_mag": 0.8400242278841217,
-      "phase_corr_response": 0.637773411171875,
-      "mae": 42.19268798828125,
-      "overlap_px": 4432114
+      "shift_x": -0.230924099719914,
+      "shift_y": 0.04892726962066263,
+      "shift_mag": 0.23605045550472,
+      "phase_corr_response": 0.7354844455295139,
+      "mae": 33.85909652709961,
+      "overlap_px": 4050117
     }
   ],
   "group_alignment": {
-    "measured_shift_x": 0.40350457346494295,
-    "measured_shift_y": 0.7367664233834148,
-    "applied_shift_x": -0.40350457346494295,
-    "applied_shift_y": -0.7367664233834148,
-    "shift_mag": 0.8400242278841217,
-    "phase_corr_response": 0.637773411171875,
-    "overlap_px": 4432114
+    "measured_shift_x": -0.230924099719914,
+    "measured_shift_y": 0.04892726962066263,
+    "applied_shift_x": 0.230924099719914,
+    "applied_shift_y": -0.04892726962066263,
+    "shift_mag": 0.23605045550472,
+    "phase_corr_response": 0.7354844455295139,
+    "overlap_px": 4050117
   },
   "group_pair_alignment_after": [],
   "seam_records": [
     {
-      "seam_cost": 12.099998474121094,
+      "seam_cost": 7.3819990158081055,
       "gradient_cost": 0.0,
-      "overlap_px": 4435236,
-      "roi_width": 3122,
-      "roi_height": 1961,
+      "overlap_px": 4050117,
+      "roi_width": 2872,
+      "roi_height": 1953,
       "pair": [
         "group0",
         "group1"

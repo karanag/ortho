@@ -24,6 +24,8 @@ python3 main.py \
   --flow-method farneback_slow \
   --flow-downscale 0.5 \
   --flow-smooth-ksize 21 \
+  --remove-bg \
+  --bg-token-file ./photoroom.txt \
   > console_log.txt 2>&1
 
 echo ">>> Pipeline finished.. Check console_log.txt for the full output."

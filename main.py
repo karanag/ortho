@@ -110,6 +110,15 @@ def main():
     parser.add_argument("--seam-cost", type=str, default="color", choices=["color", "gradient"])
     parser.add_argument("--seam-gradient-weight", type=float, default=8.0)
 
+    # Background removal & color harmonization
+    parser.add_argument("--remove-bg", action="store_true", help="Use Photoroom API to remove backgrounds on warped tiles before blending.")
+    parser.add_argument("--bg-token-file", type=Path, default=None, help="Path to file containing the Photoroom API token.")
+    parser.add_argument("--bg-retries", type=int, default=2, help="Retry attempts for Photoroom API calls.")
+    parser.add_argument("--bg-retry-delay", type=float, default=2.0, help="Delay (seconds) between Photoroom retry attempts.")
+    parser.add_argument("--color-harmonize", action="store_true", help="Run auto color harmonization on warped tiles before blending.")
+    parser.add_argument("--no-color-harmonize", action="store_true", help="Disable harmonization even if enabled by other flags.")
+    parser.add_argument("--harmonize-out", type=Path, default=None, help="Directory to store harmonization stages (defaults to debug-dir/harmonized_auto).")
+
     parser.add_argument("--debug-dir", type=Path, default=None)
     args = parser.parse_args()
 
@@ -189,6 +198,8 @@ def main():
     ])
 
     # Delegate to orthomosaic.py; it should implement seamhybrid internally
+    color_harmonize_flag = (args.color_harmonize or args.remove_bg) and not args.no_color_harmonize
+
     build_orthomosaic(
         undist_sparse,
         undist_images,
@@ -216,6 +227,12 @@ def main():
         seam_cost=args.seam_cost,
         seam_gradient_weight=args.seam_gradient_weight,
         debug_dir=args.debug_dir,
+        remove_background=args.remove_bg,
+        background_token_file=args.bg_token_file,
+        background_retries=args.bg_retries,
+        background_retry_delay=args.bg_retry_delay,
+        color_harmonize=color_harmonize_flag,
+        harmonize_output_dir=args.harmonize_out,
     )
 
     print("\nDone. Outputs:")

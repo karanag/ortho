@@ -1,8 +1,10 @@
 import os
+import argparse
+from pathlib import Path
+from typing import List, Optional, Sequence, Tuple
+
 import cv2
 import numpy as np
-from pathlib import Path
-import argparse
 
 # ---------------------------- Utils ----------------------------
 
@@ -221,20 +223,22 @@ def color_transfer_lab_masked(source, target, feather=21):
 
 # ------------------------ Stage 1: Brightness pipeline -----------------------------
 
-def stage1_bright_normalize(imgs, paths, out_dir,
+def stage1_bright_normalize(imgs, paths, out_dir=None,
                             drift_slope_thresh=0.5,
                             neighbor_beta=0.25,
                             chroma_cap=3.0,
                             enable_pairwise_clahe=False):
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = Path(out_dir) if out_dir is not None else None
+    if out_path is not None:
+        out_path.mkdir(parents=True, exist_ok=True)
 
     # Step 0: Enhance the first frame slightly so it isn't dull
     base_bgr, base_a = split_alpha(imgs[0])
     base_bgr = mild_local_contrast_if_flat(base_bgr, base_a, flat_std_thresh=22.0, clip_limit=0.7, grid=(12, 12))
     imgs[0] = merge_alpha(base_bgr, base_a)
-    cv2.imwrite(str(out_dir / paths[0].name), imgs[0])
-    print(f"✓ [S1] Base reference enhanced & saved: {paths[0].name}")
+    if out_path is not None:
+        cv2.imwrite(str(out_path / paths[0].name), imgs[0])
+    print(f"✓ [S1] Base reference enhanced: {paths[0].name}")
 
     # Step 1: Pairwise LAB mean/std match (mask-aware)
     corrected = [imgs[0]]
@@ -242,7 +246,8 @@ def stage1_bright_normalize(imgs, paths, out_dir,
         ref, tgt = corrected[-1], imgs[i]
         corr = pairwise_match_lab(ref, tgt, clahe_clip=(0.6 if enable_pairwise_clahe else 0.0))
         corrected.append(corr)
-        cv2.imwrite(str(out_dir / paths[i].name), corr)
+        if out_path is not None:
+            cv2.imwrite(str(out_path / paths[i].name), corr)
         print(f"→ [S1] Matched {paths[i].name} to {paths[i-1].name}")
 
     # Step 2: Compute luminance metrics
@@ -271,7 +276,8 @@ def stage1_bright_normalize(imgs, paths, out_dir,
             lab, a = lab_with_alpha(im)
             lab = apply_L_scale(lab, ds)
             corrected[i] = merge_alpha(cv2.cvtColor(lab.astype(np.uint8), cv2.COLOR_LAB2BGR), a)
-            cv2.imwrite(str(out_dir / paths[i].name), corrected[i])
+            if out_path is not None:
+                cv2.imwrite(str(out_path / paths[i].name), corrected[i])
     else:
         print("📉 [S1] Drift negligible; skipping drift flattening.")
 
@@ -305,7 +311,8 @@ def stage1_bright_normalize(imgs, paths, out_dir,
 
         lab = apply_L_scale(lab, scale)
         corrected[i] = merge_alpha(cv2.cvtColor(lab.astype(np.uint8), cv2.COLOR_LAB2BGR), a)
-        cv2.imwrite(str(out_dir / paths[i].name), corrected[i])
+        if out_path is not None:
+            cv2.imwrite(str(out_path / paths[i].name), corrected[i])
 
     # Step 5: Neighbor-aware low-frequency alignment
     print("🤝 [S1] Applying neighbor-aware low-freq smoothing...")
@@ -314,7 +321,8 @@ def stage1_bright_normalize(imgs, paths, out_dir,
         curr_bgr, curr_a = split_alpha(corrected[i])
         blended = low_freq_match_L(prev_bgr, curr_bgr, curr_a, beta=neighbor_beta, blur_ks=61, blur_sigma=0)
         corrected[i] = blended
-        cv2.imwrite(str(out_dir / paths[i].name), blended)
+        if out_path is not None:
+            cv2.imwrite(str(out_path / paths[i].name), blended)
 
     # Step 6: Gentle global chroma alignment (±chroma_cap)
     print("🎨 [S1] Aligning global chroma (a/b channels, gently)...")
@@ -334,7 +342,8 @@ def stage1_bright_normalize(imgs, paths, out_dir,
         lab[:, :, 2] = np.clip(lab[:, :, 2] + db, 0, 255)
         bgr = cv2.cvtColor(lab.astype(np.uint8), cv2.COLOR_LAB2BGR)
         corrected[i] = merge_alpha(bgr, a)
-        cv2.imwrite(str(out_dir / paths[i].name), corrected[i])
+        if out_path is not None:
+            cv2.imwrite(str(out_path / paths[i].name), corrected[i])
 
     # Step 7: Mild local contrast only if needed (final polish of Stage 1)
     print("✨ [S1] Final mild local-contrast polish (only if flat)...")
@@ -342,7 +351,8 @@ def stage1_bright_normalize(imgs, paths, out_dir,
         bgr, a = split_alpha(im)
         bgr = mild_local_contrast_if_flat(bgr, a, flat_std_thresh=22.0, clip_limit=0.7, grid=(12, 12))
         corrected[i] = merge_alpha(bgr, a)
-        cv2.imwrite(str(out_dir / paths[i].name), corrected[i])
+        if out_path is not None:
+            cv2.imwrite(str(out_path / paths[i].name), corrected[i])
 
     return corrected
 
@@ -366,9 +376,10 @@ def choose_reference_index(imgs):
     top_best = max(top, key=lambda i: val_counts[i])
     return int(top_best)
 
-def stage2_color_transfer(imgs, paths, out_dir, feather=21):
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+def stage2_color_transfer(imgs, paths, out_dir=None, feather=21):
+    out_path = Path(out_dir) if out_dir is not None else None
+    if out_path is not None:
+        out_path.mkdir(parents=True, exist_ok=True)
 
     ref_idx = choose_reference_index(imgs)
     ref = ensure_bgra(imgs[ref_idx])
@@ -381,18 +392,20 @@ def stage2_color_transfer(imgs, paths, out_dir, feather=21):
         else:
             out = color_transfer_lab_masked(ref, ensure_bgra(img), feather=feather)
         outputs.append(out)
-        cv2.imwrite(str(out_dir / p.name), out)
+        if out_path is not None:
+            cv2.imwrite(str(out_path / p.name), out)
         print(f"✓ [S2] Color-aligned: {p.name}")
     return outputs, ref_idx
 
 # ------------------------ Stage 3: Auto global chroma bias correction -----------------------------
 
-def stage3_global_unify(imgs, paths, out_dir, chroma_cap=2.0, bias_threshold=1.5):
+def stage3_global_unify(imgs, paths, out_dir=None, chroma_cap=2.0, bias_threshold=1.5):
     """
     Detect residual global a/b bias; if above threshold, gently center all tiles toward global medians.
     """
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = Path(out_dir) if out_dir is not None else None
+    if out_path is not None:
+        out_path.mkdir(parents=True, exist_ok=True)
 
     a_means, b_means = [], []
     for im in imgs:
@@ -411,8 +424,9 @@ def stage3_global_unify(imgs, paths, out_dir, chroma_cap=2.0, bias_threshold=1.5
     if spread < bias_threshold:
         print(f"🌈 [S3] Residual chroma spread {spread:.2f} < threshold {bias_threshold:.2f}. Skipping global unify.")
         # Still save the inputs into out_dir for consistency
-        for p, im in zip(paths, imgs):
-            cv2.imwrite(str(out_dir / p.name), im)
+        if out_path is not None:
+            for p, im in zip(paths, imgs):
+                cv2.imwrite(str(out_path / p.name), im)
         return imgs
 
     print(f"🌈 [S3] Residual chroma spread {spread:.2f} ≥ threshold {bias_threshold:.2f}. Applying gentle unify...")
@@ -429,11 +443,72 @@ def stage3_global_unify(imgs, paths, out_dir, chroma_cap=2.0, bias_threshold=1.5
         bgr2 = mild_local_contrast_if_flat(bgr2, a, flat_std_thresh=22.0, clip_limit=0.7, grid=(12, 12))
         out = merge_alpha(bgr2, a)
         unified.append(out)
-        cv2.imwrite(str(out_dir / paths[i].name), out)
+        if out_path is not None:
+            cv2.imwrite(str(out_path / paths[i].name), out)
         print(f"✓ [S3] Unified: {paths[i].name}")
     return unified
 
 # ------------------------ Orchestrator -----------------------------
+
+def harmonize_images(
+    images: Sequence[np.ndarray],
+    names: Optional[Sequence[str]] = None,
+    *,
+    out_root: Optional[Path] = None,
+    drift_slope_thresh: float = 0.5,
+    neighbor_beta: float = 0.25,
+    chroma_cap: float = 3.0,
+    enable_pairwise_clahe: bool = False,
+    feather: int = 21,
+    s3_chroma_cap: float = 2.0,
+    s3_bias_threshold: float = 1.5,
+) -> Tuple[List[np.ndarray], int]:
+    """Run the harmonization pipeline on in-memory images."""
+
+    if not images:
+        return [], -1
+
+    if names is None:
+        path_tags = [Path(f"image_{idx:02d}.png") for idx in range(len(images))]
+    else:
+        path_tags = [Path(str(name)) for name in names]
+
+    prepared: List[np.ndarray] = [img.copy() for img in images]
+
+    root_dir = Path(out_root) if out_root is not None else None
+    if root_dir is not None:
+        root_dir.mkdir(parents=True, exist_ok=True)
+
+    s1_dir = root_dir / "01_bright" if root_dir is not None else None
+    s1 = stage1_bright_normalize(
+        prepared,
+        path_tags,
+        out_dir=s1_dir,
+        drift_slope_thresh=drift_slope_thresh,
+        neighbor_beta=neighbor_beta,
+        chroma_cap=chroma_cap,
+        enable_pairwise_clahe=enable_pairwise_clahe,
+    )
+
+    s2_dir = root_dir / "02_color_aligned" if root_dir is not None else None
+    s2, ref_idx = stage2_color_transfer(
+        s1,
+        path_tags,
+        out_dir=s2_dir,
+        feather=feather,
+    )
+
+    s3_dir = root_dir / "03_final" if root_dir is not None else None
+    s3 = stage3_global_unify(
+        s2,
+        path_tags,
+        out_dir=s3_dir,
+        chroma_cap=s3_chroma_cap,
+        bias_threshold=s3_bias_threshold,
+    )
+
+    return s3, ref_idx
+
 
 def run_pipeline(inp_dir, out_root,
                  drift_slope_thresh=0.5,
@@ -444,8 +519,8 @@ def run_pipeline(inp_dir, out_root,
                  s3_chroma_cap=2.0,
                  s3_bias_threshold=1.5):
     inp = Path(inp_dir)
-    out_root = Path(out_root)
-    out_root.mkdir(parents=True, exist_ok=True)
+    out_root_path = Path(out_root)
+    out_root_path.mkdir(parents=True, exist_ok=True)
 
     paths = sorted([p for p in inp.glob("*.png")])
     if not paths:
@@ -454,29 +529,27 @@ def run_pipeline(inp_dir, out_root,
 
     imgs = [cv2.imread(str(p), cv2.IMREAD_UNCHANGED) for p in paths]
 
-    # Stage 1
-    s1_dir = out_root / "01_bright"
-    s1 = stage1_bright_normalize(
-        imgs, paths, s1_dir,
+    _, ref_idx = harmonize_images(
+        imgs,
+        names=[p.name for p in paths],
+        out_root=out_root_path,
         drift_slope_thresh=drift_slope_thresh,
         neighbor_beta=neighbor_beta,
         chroma_cap=chroma_cap,
-        enable_pairwise_clahe=enable_pairwise_clahe
+        enable_pairwise_clahe=enable_pairwise_clahe,
+        feather=feather,
+        s3_chroma_cap=s3_chroma_cap,
+        s3_bias_threshold=s3_bias_threshold,
     )
 
-    # Stage 2
-    s2_dir = out_root / "02_color_aligned"
-    s2, ref_idx = stage2_color_transfer(s1, paths, s2_dir, feather=feather)
-
-    # Stage 3
-    s3_dir = out_root / "03_final"
-    s3 = stage3_global_unify(s2, paths, s3_dir, chroma_cap=s3_chroma_cap, bias_threshold=s3_bias_threshold)
-
     print("\n✅ Done. Outputs:")
-    print(f"   Stage 1: {s1_dir}")
-    print(f"   Stage 2: {s2_dir}")
-    print(f"   Stage 3: {s3_dir}")
-    print(f"   Reference tile (Stage 2): index {ref_idx} → {paths[ref_idx].name}")
+    print(f"   Stage 1: {out_root_path / '01_bright'}")
+    print(f"   Stage 2: {out_root_path / '02_color_aligned'}")
+    print(f"   Stage 3: {out_root_path / '03_final'}")
+    if 0 <= ref_idx < len(paths):
+        print(f"   Reference tile (Stage 2): index {ref_idx} → {paths[ref_idx].name}")
+    else:
+        print("   Reference tile (Stage 2): unavailable")
 
 # ------------------------ CLI -----------------------------
 
