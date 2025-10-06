@@ -144,8 +144,6 @@ def main():
     ])
 
     # 2) Matching
-    # 2) Matching
-    # 2) Matching
     if args.exhaustive:
         flags = pick_matching_flags(colmap)
         run([colmap, "exhaustive_matcher", f"--database_path={db}", *flags])
