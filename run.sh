@@ -19,12 +19,12 @@ python3 -u main.py \
   --seam-method graphcut \
   --flow-max-px 4 \
   --stripe-flow-max-px 12 \
-  --split-stripes \
   --debug-dir out \
   --flow-method farneback_slow \
   --flow-downscale 0.5 \
   --flow-smooth-ksize 21 \
   --remove-bg \
+  --color-harmonize \
   --bg-token-file ./photoroom.txt \
   > console_log.txt 2>&1
 
