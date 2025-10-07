@@ -1,177 +1,177 @@
-I20251006 17:23:29.540990 1887352 misc.cc:44] 
+Running: /opt/homebrew/bin/colmap feature_extractor --database_path=out/db.db --image_path=images/3 --ImageReader.single_camera=1 --ImageReader.camera_model=SIMPLE_RADIAL
+I20251007 13:03:25.291613 366112 misc.cc:44] 
 ==============================================================================
 Feature extraction
 ==============================================================================
-I20251006 17:23:29.570840 1887361 sift.cc:721] Creating SIFT GPU feature extractor
-I20251006 17:23:29.942313 1887362 feature_extraction.cc:259] Processed file [1/6]
-I20251006 17:23:29.942378 1887362 feature_extraction.cc:262]   Name:            1A.jpeg
-I20251006 17:23:29.942396 1887362 feature_extraction.cc:271]   Dimensions:      1600 x 1200
-I20251006 17:23:29.942404 1887362 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
-I20251006 17:23:29.942413 1887362 feature_extraction.cc:277]   Focal Length:    1920.00px
-I20251006 17:23:29.942421 1887362 feature_extraction.cc:281]   Features:        12583
-I20251006 17:23:30.018679 1887362 feature_extraction.cc:259] Processed file [2/6]
-I20251006 17:23:30.018720 1887362 feature_extraction.cc:262]   Name:            1B.jpeg
-I20251006 17:23:30.018730 1887362 feature_extraction.cc:271]   Dimensions:      1600 x 1200
-I20251006 17:23:30.018738 1887362 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
-I20251006 17:23:30.018745 1887362 feature_extraction.cc:277]   Focal Length:    1920.00px
-I20251006 17:23:30.018752 1887362 feature_extraction.cc:281]   Features:        13074
-I20251006 17:23:30.087571 1887362 feature_extraction.cc:259] Processed file [3/6]
-I20251006 17:23:30.087621 1887362 feature_extraction.cc:262]   Name:            2A.jpeg
-I20251006 17:23:30.087635 1887362 feature_extraction.cc:271]   Dimensions:      1600 x 1200
-I20251006 17:23:30.087653 1887362 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
-I20251006 17:23:30.087662 1887362 feature_extraction.cc:277]   Focal Length:    1920.00px
-I20251006 17:23:30.087670 1887362 feature_extraction.cc:281]   Features:        11953
-I20251006 17:23:30.159251 1887362 feature_extraction.cc:259] Processed file [4/6]
-I20251006 17:23:30.159283 1887362 feature_extraction.cc:262]   Name:            2B.jpeg
-I20251006 17:23:30.159291 1887362 feature_extraction.cc:271]   Dimensions:      1600 x 1200
-I20251006 17:23:30.159298 1887362 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
-I20251006 17:23:30.159305 1887362 feature_extraction.cc:277]   Focal Length:    1920.00px
-I20251006 17:23:30.159312 1887362 feature_extraction.cc:281]   Features:        12783
-I20251006 17:23:30.233038 1887362 feature_extraction.cc:259] Processed file [5/6]
-I20251006 17:23:30.233085 1887362 feature_extraction.cc:262]   Name:            3A.jpeg
-I20251006 17:23:30.233095 1887362 feature_extraction.cc:271]   Dimensions:      1600 x 1200
-I20251006 17:23:30.233103 1887362 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
-I20251006 17:23:30.233111 1887362 feature_extraction.cc:277]   Focal Length:    1920.00px
-I20251006 17:23:30.233119 1887362 feature_extraction.cc:281]   Features:        10274
-I20251006 17:23:30.305207 1887362 feature_extraction.cc:259] Processed file [6/6]
-I20251006 17:23:30.305236 1887362 feature_extraction.cc:262]   Name:            3B.jpeg
-I20251006 17:23:30.305245 1887362 feature_extraction.cc:271]   Dimensions:      1600 x 1200
-I20251006 17:23:30.305251 1887362 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
-I20251006 17:23:30.305258 1887362 feature_extraction.cc:277]   Focal Length:    1920.00px
-I20251006 17:23:30.305264 1887362 feature_extraction.cc:281]   Features:        9195
-I20251006 17:23:30.309367 1887352 timer.cc:91] Elapsed time: 0.013 [minutes]
-I20251006 17:23:30.585371 1887420 misc.cc:44] 
+I20251007 13:03:25.301004 366121 sift.cc:721] Creating SIFT GPU feature extractor
+I20251007 13:03:25.658926 366122 feature_extraction.cc:259] Processed file [1/6]
+I20251007 13:03:25.658974 366122 feature_extraction.cc:262]   Name:            1A.jpeg
+I20251007 13:03:25.658984 366122 feature_extraction.cc:271]   Dimensions:      1600 x 1200
+I20251007 13:03:25.658991 366122 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
+I20251007 13:03:25.658998 366122 feature_extraction.cc:277]   Focal Length:    1920.00px
+I20251007 13:03:25.659005 366122 feature_extraction.cc:281]   Features:        12583
+I20251007 13:03:25.742059 366122 feature_extraction.cc:259] Processed file [2/6]
+I20251007 13:03:25.742100 366122 feature_extraction.cc:262]   Name:            1B.jpeg
+I20251007 13:03:25.742108 366122 feature_extraction.cc:271]   Dimensions:      1600 x 1200
+I20251007 13:03:25.742115 366122 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
+I20251007 13:03:25.742121 366122 feature_extraction.cc:277]   Focal Length:    1920.00px
+I20251007 13:03:25.742128 366122 feature_extraction.cc:281]   Features:        13074
+I20251007 13:03:25.814088 366122 feature_extraction.cc:259] Processed file [3/6]
+I20251007 13:03:25.814116 366122 feature_extraction.cc:262]   Name:            2A.jpeg
+I20251007 13:03:25.814127 366122 feature_extraction.cc:271]   Dimensions:      1600 x 1200
+I20251007 13:03:25.814137 366122 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
+I20251007 13:03:25.814144 366122 feature_extraction.cc:277]   Focal Length:    1920.00px
+I20251007 13:03:25.814152 366122 feature_extraction.cc:281]   Features:        11953
+I20251007 13:03:25.882370 366122 feature_extraction.cc:259] Processed file [4/6]
+I20251007 13:03:25.882405 366122 feature_extraction.cc:262]   Name:            2B.jpeg
+I20251007 13:03:25.882416 366122 feature_extraction.cc:271]   Dimensions:      1600 x 1200
+I20251007 13:03:25.882426 366122 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
+I20251007 13:03:25.882432 366122 feature_extraction.cc:277]   Focal Length:    1920.00px
+I20251007 13:03:25.882439 366122 feature_extraction.cc:281]   Features:        12783
+I20251007 13:03:25.952334 366122 feature_extraction.cc:259] Processed file [5/6]
+I20251007 13:03:25.952364 366122 feature_extraction.cc:262]   Name:            3A.jpeg
+I20251007 13:03:25.952373 366122 feature_extraction.cc:271]   Dimensions:      1600 x 1200
+I20251007 13:03:25.952379 366122 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
+I20251007 13:03:25.952386 366122 feature_extraction.cc:277]   Focal Length:    1920.00px
+I20251007 13:03:25.952394 366122 feature_extraction.cc:281]   Features:        10274
+I20251007 13:03:26.022547 366122 feature_extraction.cc:259] Processed file [6/6]
+I20251007 13:03:26.022571 366122 feature_extraction.cc:262]   Name:            3B.jpeg
+I20251007 13:03:26.022579 366122 feature_extraction.cc:271]   Dimensions:      1600 x 1200
+I20251007 13:03:26.022585 366122 feature_extraction.cc:274]   Camera:          #1 - SIMPLE_RADIAL
+I20251007 13:03:26.022591 366122 feature_extraction.cc:277]   Focal Length:    1920.00px
+I20251007 13:03:26.022598 366122 feature_extraction.cc:281]   Features:        9195
+I20251007 13:03:26.026619 366112 timer.cc:91] Elapsed time: 0.012 [minutes]
+Running: /opt/homebrew/bin/colmap exhaustive_matcher --database_path=out/db.db --SiftMatching.guided_matching=1 --SiftMatching.max_num_matches=50000
+I20251007 13:03:26.302330 366186 misc.cc:44] 
 ==============================================================================
 Feature matching
 ==============================================================================
-I20251006 17:23:30.595925 1887421 sift.cc:1428] Creating SIFT GPU feature matcher
-I20251006 17:23:30.595952 1887430 sift.cc:1428] Creating SIFT GPU feature matcher
-I20251006 17:23:30.619545 1887420 pairing.cc:173] Generating exhaustive image pairs...
-I20251006 17:23:30.619571 1887420 pairing.cc:206] Matching block [1/1, 1/1]
-I20251006 17:23:35.622825 1887420 feature_matching.cc:47] in 5.003s
-I20251006 17:23:35.623469 1887420 timer.cc:91] Elapsed time: 0.084 [minutes]
-I20251006 17:23:35.850595 1887589 incremental_pipeline.cc:254] Loading database
-I20251006 17:23:35.861796 1887589 database_cache.cc:66] Loading rigs...
-I20251006 17:23:35.861855 1887589 database_cache.cc:76]  1 in 0.000s
-I20251006 17:23:35.861867 1887589 database_cache.cc:84] Loading cameras...
-I20251006 17:23:35.861883 1887589 database_cache.cc:102]  1 in 0.000s
-I20251006 17:23:35.861891 1887589 database_cache.cc:110] Loading frames...
-I20251006 17:23:35.863824 1887589 database_cache.cc:127]  6 in 0.002s
-I20251006 17:23:35.863840 1887589 database_cache.cc:135] Loading matches...
-I20251006 17:23:35.864066 1887589 database_cache.cc:140]  12 in 0.000s
-I20251006 17:23:35.864080 1887589 database_cache.cc:156] Loading images...
-I20251006 17:23:35.925036 1887589 database_cache.cc:241]  6 in 0.061s (connected 6)
-I20251006 17:23:35.925057 1887589 database_cache.cc:252] Building correspondence graph...
-I20251006 17:23:35.928601 1887589 database_cache.cc:279]  in 0.004s (ignored 0)
-I20251006 17:23:35.928620 1887589 timer.cc:91] Elapsed time: 0.001 [minutes]
-I20251006 17:23:35.931460 1887589 incremental_pipeline.cc:300] Finding good initial image pair
-I20251006 17:23:35.993005 1887589 incremental_pipeline.cc:324] Registering initial image pair #4 and #6
-I20251006 17:23:35.999894 1887589 incremental_pipeline.cc:338] Global bundle adjustment
-I20251006 17:23:36.406507 1887589 incremental_pipeline.cc:428] Registering image #3 (num_reg_frames=2)
-I20251006 17:23:36.406538 1887589 incremental_pipeline.cc:431] => Image sees 826 / 6722 points
-I20251006 17:23:36.616734 1887589 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
-I20251006 17:23:36.695361 1887589 incremental_pipeline.cc:428] Registering image #2 (num_reg_frames=3)
-I20251006 17:23:36.695396 1887589 incremental_pipeline.cc:431] => Image sees 1270 / 7366 points
-I20251006 17:23:37.086745 1887589 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
-I20251006 17:23:37.173126 1887589 incremental_pipeline.cc:428] Registering image #5 (num_reg_frames=4)
-I20251006 17:23:37.173157 1887589 incremental_pipeline.cc:431] => Image sees 1713 / 4556 points
-I20251006 17:23:37.448112 1887589 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
-I20251006 17:23:37.542485 1887589 incremental_pipeline.cc:428] Registering image #1 (num_reg_frames=5)
-I20251006 17:23:37.542520 1887589 incremental_pipeline.cc:431] => Image sees 1455 / 6214 points
-I20251006 17:23:37.989478 1887589 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
-I20251006 17:23:38.090739 1887589 incremental_pipeline.cc:584] Keeping successful reconstruction
-I20251006 17:23:38.101399 1887589 timer.cc:91] Elapsed time: 0.038 [minutes]
-I20251006 17:23:38.145246 1887671 misc.cc:44] 
-==============================================================================
-Reading reconstruction
-==============================================================================
-I20251006 17:23:38.149449 1887671 image.cc:361] => Reconstruction with 6 images and 3831 points
-I20251006 17:23:38.149472 1887671 misc.cc:44] 
-==============================================================================
-Image undistortion
-==============================================================================
-I20251006 17:23:38.149843 1887671 undistortion.cc:197] Undistorting image [1/6]
-I20251006 17:23:38.360518 1887671 undistortion.cc:197] Undistorting image [2/6]
-I20251006 17:23:38.360579 1887671 undistortion.cc:197] Undistorting image [3/6]
-I20251006 17:23:38.360594 1887671 undistortion.cc:197] Undistorting image [4/6]
-I20251006 17:23:38.360600 1887671 undistortion.cc:197] Undistorting image [5/6]
-I20251006 17:23:38.363435 1887671 undistortion.cc:197] Undistorting image [6/6]
-I20251006 17:23:38.363448 1887671 undistortion.cc:207] Writing reconstruction...
-I20251006 17:23:38.381556 1887671 undistortion.cc:212] Writing configuration...
-I20251006 17:23:38.381680 1887671 undistortion.cc:216] Writing scripts...
-I20251006 17:23:38.381779 1887671 timer.cc:91] Elapsed time: 0.004 [minutes]
-E20251006 17:23:38.414695 1887698 mvs.cc:80] Dense stereo reconstruction requires CUDA, which is not available on your system.
-I20251006 17:23:38.446750 1887706 misc.cc:51] 
-StereoFusion::Options
----------------------
-I20251006 17:23:38.446935 1887706 fusion.cc:76] mask_path: 
-I20251006 17:23:38.446942 1887706 fusion.cc:77] max_image_size: -1
-I20251006 17:23:38.446949 1887706 fusion.cc:78] min_num_pixels: 5
-I20251006 17:23:38.446954 1887706 fusion.cc:79] max_num_pixels: 10000
-I20251006 17:23:38.446959 1887706 fusion.cc:80] max_traversal_depth: 100
-I20251006 17:23:38.446964 1887706 fusion.cc:81] max_reproj_error: 2
-I20251006 17:23:38.446969 1887706 fusion.cc:82] max_depth_error: 0.01
-I20251006 17:23:38.446975 1887706 fusion.cc:83] max_normal_error: 10
-I20251006 17:23:38.446980 1887706 fusion.cc:84] check_num_images: 50
-I20251006 17:23:38.446985 1887706 fusion.cc:85] use_cache: 0
-I20251006 17:23:38.446990 1887706 fusion.cc:86] cache_size: 32
-I20251006 17:23:38.446995 1887706 fusion.cc:89] bbox_min: -3.40282e+38 -3.40282e+38 -3.40282e+38
-I20251006 17:23:38.447222 1887706 fusion.cc:90] bbox_max: 3.40282e+38 3.40282e+38 3.40282e+38
-I20251006 17:23:38.447232 1887706 fusion.cc:140] Reading workspace...
-I20251006 17:23:38.451985 1887706 workspace.cc:98] Loading workspace data with 8 threads...
-W20251006 17:23:38.452008 1887706 workspace.cc:105] Ignoring image 1A.jpeg, because input does not exist.
-W20251006 17:23:38.452021 1887706 workspace.cc:105] Ignoring image 1B.jpeg, because input does not exist.
-W20251006 17:23:38.452031 1887706 workspace.cc:105] Ignoring image 2A.jpeg, because input does not exist.
-W20251006 17:23:38.452042 1887706 workspace.cc:105] Ignoring image 2B.jpeg, because input does not exist.
-W20251006 17:23:38.452052 1887706 workspace.cc:105] Ignoring image 3A.jpeg, because input does not exist.
-W20251006 17:23:38.452061 1887706 workspace.cc:105] Ignoring image 3B.jpeg, because input does not exist.
-I20251006 17:23:38.452067 1887706 timer.cc:91] Elapsed time: 0.000 [minutes]
-I20251006 17:23:38.452144 1887706 fusion.cc:175] Reading configuration...
-W20251006 17:23:38.453152 1887706 fusion.cc:205] Ignoring image 1A.jpeg, because input does not exist.
-W20251006 17:23:38.453163 1887706 fusion.cc:205] Ignoring image 1B.jpeg, because input does not exist.
-W20251006 17:23:38.453173 1887706 fusion.cc:205] Ignoring image 2A.jpeg, because input does not exist.
-W20251006 17:23:38.453181 1887706 fusion.cc:205] Ignoring image 2B.jpeg, because input does not exist.
-W20251006 17:23:38.453189 1887706 fusion.cc:205] Ignoring image 3A.jpeg, because input does not exist.
-W20251006 17:23:38.453197 1887706 fusion.cc:205] Ignoring image 3B.jpeg, because input does not exist.
-I20251006 17:23:38.453202 1887706 fusion.cc:243] Starting fusion with 8 threads
-I20251006 17:23:38.453248 1887706 fusion.cc:279] Fusing image [1/6] with index 0
-I20251006 17:23:38.453254 1887706 fusion.cc:306]  in 0.000s (0 points)
-W20251006 17:23:38.453261 1887706 fusion.cc:327] Could not fuse any points. This is likely caused by incorrect settings - filtering must be enabled for the last call to patch match stereo.
-I20251006 17:23:38.453266 1887706 fusion.cc:333] Number of fused points: 0
-I20251006 17:23:38.453272 1887706 timer.cc:91] Elapsed time: 0.000 [minutes]
-I20251006 17:23:38.457612 1887706 mvs.cc:203] Writing output: out/dense/fused.ply
-I20251006 17:23:38.488806 1887731 misc.cc:44] 
-==============================================================================
-Reading reconstruction
-==============================================================================
-I20251006 17:23:38.493065 1887731 image.cc:361] => Reconstruction with 6 images and 3831 points
-I20251006 17:23:38.493088 1887731 misc.cc:44] 
-==============================================================================
-Image undistortion
-==============================================================================
-I20251006 17:23:38.493196 1887731 undistortion.cc:197] Undistorting image [1/6]
-I20251006 17:23:38.714371 1887731 undistortion.cc:197] Undistorting image [2/6]
-I20251006 17:23:38.719161 1887731 undistortion.cc:197] Undistorting image [3/6]
-I20251006 17:23:38.719177 1887731 undistortion.cc:197] Undistorting image [4/6]
-I20251006 17:23:38.719185 1887731 undistortion.cc:197] Undistorting image [5/6]
-I20251006 17:23:38.724006 1887731 undistortion.cc:197] Undistorting image [6/6]
-I20251006 17:23:38.724020 1887731 undistortion.cc:207] Writing reconstruction...
-I20251006 17:23:38.740257 1887731 undistortion.cc:212] Writing configuration...
-I20251006 17:23:38.740356 1887731 undistortion.cc:216] Writing scripts...
-I20251006 17:23:38.740461 1887731 timer.cc:91] Elapsed time: 0.004 [minutes]
-/Users/karan/breeze_env/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
-Running: /opt/homebrew/bin/colmap feature_extractor --database_path=out/db.db --image_path=images/3 --ImageReader.single_camera=1 --ImageReader.camera_model=SIMPLE_RADIAL
-Running: /opt/homebrew/bin/colmap exhaustive_matcher --database_path=out/db.db --SiftMatching.guided_matching=1 --SiftMatching.max_num_matches=50000
+I20251007 13:03:26.310484 366187 sift.cc:1428] Creating SIFT GPU feature matcher
+I20251007 13:03:26.310501 366196 sift.cc:1428] Creating SIFT GPU feature matcher
+I20251007 13:03:26.334030 366186 pairing.cc:173] Generating exhaustive image pairs...
+I20251007 13:03:26.334048 366186 pairing.cc:206] Matching block [1/1, 1/1]
+I20251007 13:03:28.772159 366186 feature_matching.cc:47] in 2.438s
+I20251007 13:03:28.772195 366186 timer.cc:91] Elapsed time: 0.041 [minutes]
 Running: /opt/homebrew/bin/colmap mapper --database_path=out/db.db --image_path=images/3 --output_path=out/sparse --Mapper.ba_local_max_num_iterations=50 --Mapper.ba_global_max_num_iterations=100 --Mapper.init_min_num_inliers=60
+I20251007 13:03:28.846316 366250 incremental_pipeline.cc:254] Loading database
+I20251007 13:03:28.847574 366250 database_cache.cc:66] Loading rigs...
+I20251007 13:03:28.847599 366250 database_cache.cc:76]  1 in 0.000s
+I20251007 13:03:28.847609 366250 database_cache.cc:84] Loading cameras...
+I20251007 13:03:28.847623 366250 database_cache.cc:102]  1 in 0.000s
+I20251007 13:03:28.847631 366250 database_cache.cc:110] Loading frames...
+I20251007 13:03:28.847656 366250 database_cache.cc:127]  6 in 0.000s
+I20251007 13:03:28.847664 366250 database_cache.cc:135] Loading matches...
+I20251007 13:03:28.847795 366250 database_cache.cc:140]  12 in 0.000s
+I20251007 13:03:28.847803 366250 database_cache.cc:156] Loading images...
+I20251007 13:03:28.850572 366250 database_cache.cc:241]  6 in 0.003s (connected 6)
+I20251007 13:03:28.850591 366250 database_cache.cc:252] Building correspondence graph...
+I20251007 13:03:28.854394 366250 database_cache.cc:279]  in 0.004s (ignored 0)
+I20251007 13:03:28.854410 366250 timer.cc:91] Elapsed time: 0.000 [minutes]
+I20251007 13:03:28.857141 366250 incremental_pipeline.cc:300] Finding good initial image pair
+I20251007 13:03:28.905058 366250 incremental_pipeline.cc:324] Registering initial image pair #4 and #6
+I20251007 13:03:28.909276 366250 incremental_pipeline.cc:338] Global bundle adjustment
+I20251007 13:03:29.288656 366250 incremental_pipeline.cc:428] Registering image #3 (num_reg_frames=2)
+I20251007 13:03:29.288681 366250 incremental_pipeline.cc:431] => Image sees 826 / 6722 points
+I20251007 13:03:29.490883 366250 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
+I20251007 13:03:29.550467 366250 incremental_pipeline.cc:428] Registering image #2 (num_reg_frames=3)
+I20251007 13:03:29.550487 366250 incremental_pipeline.cc:431] => Image sees 1270 / 7366 points
+I20251007 13:03:29.939993 366250 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
+I20251007 13:03:30.035244 366250 incremental_pipeline.cc:428] Registering image #5 (num_reg_frames=4)
+I20251007 13:03:30.035269 366250 incremental_pipeline.cc:431] => Image sees 1713 / 4556 points
+I20251007 13:03:30.301232 366250 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
+I20251007 13:03:30.407670 366250 incremental_pipeline.cc:428] Registering image #1 (num_reg_frames=5)
+I20251007 13:03:30.407688 366250 incremental_pipeline.cc:431] => Image sees 1455 / 6214 points
+I20251007 13:03:30.801944 366250 incremental_pipeline.cc:43] Retriangulation and Global bundle adjustment
+I20251007 13:03:30.914386 366250 incremental_pipeline.cc:584] Keeping successful reconstruction
+I20251007 13:03:30.924840 366250 timer.cc:91] Elapsed time: 0.035 [minutes]
 Selected reconstruction 0 with 6 registered images and 3831 points.
 Running: /opt/homebrew/bin/colmap image_undistorter --image_path=images/3 --input_path=out/sparse/0 --output_path=out/dense --max_image_size=4000
+I20251007 13:03:30.979043 366277 misc.cc:44] 
+==============================================================================
+Reading reconstruction
+==============================================================================
+I20251007 13:03:30.983201 366277 image.cc:361] => Reconstruction with 6 images and 3831 points
+I20251007 13:03:30.983225 366277 misc.cc:44] 
+==============================================================================
+Image undistortion
+==============================================================================
+I20251007 13:03:30.984175 366277 undistortion.cc:197] Undistorting image [1/6]
+I20251007 13:03:31.175695 366277 undistortion.cc:197] Undistorting image [2/6]
+I20251007 13:03:31.201659 366277 undistortion.cc:197] Undistorting image [3/6]
+I20251007 13:03:31.201679 366277 undistortion.cc:197] Undistorting image [4/6]
+I20251007 13:03:31.203310 366277 undistortion.cc:197] Undistorting image [5/6]
+I20251007 13:03:31.203322 366277 undistortion.cc:197] Undistorting image [6/6]
+I20251007 13:03:31.203329 366277 undistortion.cc:207] Writing reconstruction...
+I20251007 13:03:31.223788 366277 undistortion.cc:212] Writing configuration...
+I20251007 13:03:31.223889 366277 undistortion.cc:216] Writing scripts...
+I20251007 13:03:31.223992 366277 timer.cc:91] Elapsed time: 0.004 [minutes]
 Running: /opt/homebrew/bin/colmap patch_match_stereo --workspace_path=out/dense --workspace_format=COLMAP --PatchMatchStereo.geom_consistency=true
+E20251007 13:03:31.256570 366294 mvs.cc:80] Dense stereo reconstruction requires CUDA, which is not available on your system.
 Running: /opt/homebrew/bin/colmap stereo_fusion --workspace_path=out/dense --workspace_format=COLMAP --input_type=geometric --output_path=out/dense/fused.ply
+I20251007 13:03:31.290948 366300 misc.cc:51] 
+StereoFusion::Options
+---------------------
+I20251007 13:03:31.291167 366300 fusion.cc:76] mask_path: 
+I20251007 13:03:31.291177 366300 fusion.cc:77] max_image_size: -1
+I20251007 13:03:31.291183 366300 fusion.cc:78] min_num_pixels: 5
+I20251007 13:03:31.291189 366300 fusion.cc:79] max_num_pixels: 10000
+I20251007 13:03:31.291195 366300 fusion.cc:80] max_traversal_depth: 100
+I20251007 13:03:31.291200 366300 fusion.cc:81] max_reproj_error: 2
+I20251007 13:03:31.291208 366300 fusion.cc:82] max_depth_error: 0.01
+I20251007 13:03:31.291213 366300 fusion.cc:83] max_normal_error: 10
+I20251007 13:03:31.291218 366300 fusion.cc:84] check_num_images: 50
+I20251007 13:03:31.291224 366300 fusion.cc:85] use_cache: 0
+I20251007 13:03:31.291229 366300 fusion.cc:86] cache_size: 32
+I20251007 13:03:31.291234 366300 fusion.cc:89] bbox_min: -3.40282e+38 -3.40282e+38 -3.40282e+38
+I20251007 13:03:31.295223 366300 fusion.cc:90] bbox_max: 3.40282e+38 3.40282e+38 3.40282e+38
+I20251007 13:03:31.295234 366300 fusion.cc:140] Reading workspace...
+I20251007 13:03:31.301432 366300 workspace.cc:98] Loading workspace data with 8 threads...
+W20251007 13:03:31.301478 366300 workspace.cc:105] Ignoring image 1A.jpeg, because input does not exist.
+W20251007 13:03:31.301494 366300 workspace.cc:105] Ignoring image 1B.jpeg, because input does not exist.
+W20251007 13:03:31.301507 366300 workspace.cc:105] Ignoring image 2A.jpeg, because input does not exist.
+W20251007 13:03:31.301518 366300 workspace.cc:105] Ignoring image 2B.jpeg, because input does not exist.
+W20251007 13:03:31.301529 366300 workspace.cc:105] Ignoring image 3A.jpeg, because input does not exist.
+W20251007 13:03:31.301540 366300 workspace.cc:105] Ignoring image 3B.jpeg, because input does not exist.
+I20251007 13:03:31.301546 366300 timer.cc:91] Elapsed time: 0.000 [minutes]
+I20251007 13:03:31.301662 366300 fusion.cc:175] Reading configuration...
+W20251007 13:03:31.305222 366300 fusion.cc:205] Ignoring image 1A.jpeg, because input does not exist.
+W20251007 13:03:31.305235 366300 fusion.cc:205] Ignoring image 1B.jpeg, because input does not exist.
+W20251007 13:03:31.305245 366300 fusion.cc:205] Ignoring image 2A.jpeg, because input does not exist.
+W20251007 13:03:31.305254 366300 fusion.cc:205] Ignoring image 2B.jpeg, because input does not exist.
+W20251007 13:03:31.305262 366300 fusion.cc:205] Ignoring image 3A.jpeg, because input does not exist.
+W20251007 13:03:31.305271 366300 fusion.cc:205] Ignoring image 3B.jpeg, because input does not exist.
+I20251007 13:03:31.305277 366300 fusion.cc:243] Starting fusion with 8 threads
+I20251007 13:03:31.305354 366300 fusion.cc:279] Fusing image [1/6] with index 0
+I20251007 13:03:31.305364 366300 fusion.cc:306]  in 0.000s (0 points)
+W20251007 13:03:31.305373 366300 fusion.cc:327] Could not fuse any points. This is likely caused by incorrect settings - filtering must be enabled for the last call to patch match stereo.
+I20251007 13:03:31.305408 366300 fusion.cc:333] Number of fused points: 0
+I20251007 13:03:31.305415 366300 timer.cc:91] Elapsed time: 0.000 [minutes]
+I20251007 13:03:31.309818 366300 mvs.cc:203] Writing output: out/dense/fused.ply
 Running: /opt/homebrew/bin/colmap image_undistorter --image_path=images/3 --input_path=out/sparse/0 --output_path=out/dense --output_type COLMAP --max_image_size=-1
+I20251007 13:03:31.343457 366322 misc.cc:44] 
+==============================================================================
+Reading reconstruction
+==============================================================================
+I20251007 13:03:31.348048 366322 image.cc:361] => Reconstruction with 6 images and 3831 points
+I20251007 13:03:31.348080 366322 misc.cc:44] 
+==============================================================================
+Image undistortion
+==============================================================================
+I20251007 13:03:31.348186 366322 undistortion.cc:197] Undistorting image [1/6]
+I20251007 13:03:31.599798 366322 undistortion.cc:197] Undistorting image [2/6]
+I20251007 13:03:31.600744 366322 undistortion.cc:197] Undistorting image [3/6]
+I20251007 13:03:31.600775 366322 undistortion.cc:197] Undistorting image [4/6]
+I20251007 13:03:31.600791 366322 undistortion.cc:197] Undistorting image [5/6]
+I20251007 13:03:31.627595 366322 undistortion.cc:197] Undistorting image [6/6]
+I20251007 13:03:31.627627 366322 undistortion.cc:207] Writing reconstruction...
+I20251007 13:03:31.648201 366322 undistortion.cc:212] Writing configuration...
+I20251007 13:03:31.648314 366322 undistortion.cc:216] Writing scripts...
+I20251007 13:03:31.648422 366322 timer.cc:91] Elapsed time: 0.005 [minutes]
 Plane fit: pts=3831 inliers=3831 (100.0%) |height| mean=0.0108 p95=0.0300 max=0.0844
 Dense depth not found or unreadable; using sparse correspondences.
 Orthomosaic size: 3199x4000 (scale=212.590)
+/Users/karan/breeze_env/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
 [1/6] Removing background for 00_3A.jpeg.png...
    ✅ Saved processed result for 00_3A.jpeg.png
 [2/6] Removing background for 01_3B.jpeg.png...

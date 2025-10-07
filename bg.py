@@ -1,10 +1,17 @@
 import time
+import warnings
 from pathlib import Path
 from typing import List, Optional, Sequence
 
 import cv2
 import numpy as np
 import requests
+
+try:
+    from urllib3.exceptions import NotOpenSSLWarning
+    warnings.simplefilter("ignore", NotOpenSSLWarning)
+except Exception:
+    pass
 
 DEFAULT_TOKEN_PATH = "/Users/karan/development/Projects/Ortho/photoroom.txt"
 
@@ -52,9 +59,12 @@ def remove_background_image(
             if response.status_code == 200:
                 data = np.frombuffer(response.content, dtype=np.uint8)
                 return cv2.imdecode(data, cv2.IMREAD_UNCHANGED)
-            time.sleep(delay)
-        except Exception:
-            time.sleep(delay)
+            if delay > 0:
+                time.sleep(delay)
+        except Exception as exc:
+            print(f"   ⚠️  PhotoRoom request failed (attempt {attempt}/{retries}): {exc}", flush=True)
+            if delay > 0:
+                time.sleep(delay)
     return None
 
 
@@ -87,7 +97,7 @@ def remove_background_batch(
     for idx, img in enumerate(images_bgr, start=1):
         name = names[idx - 1] if names is not None and idx - 1 < len(names) else f"image_{idx:04d}.png"
         if verbose:
-            print(f"[{idx}/{total}] Removing background for {name}...")
+            print(f"[{idx}/{total}] Removing background for {name}...", flush=True)
         if img is None:
             results.append(None)
             if verbose:
@@ -107,11 +117,11 @@ def remove_background_batch(
             if save_dir_path is not None:
                 cv2.imwrite(str(save_dir_path / Path(name).name), out)
             if verbose:
-                print(f"   ✅ Saved processed result for {name}")
+                print(f"   ✅ Saved processed result for {name}", flush=True)
         else:
             results.append(None)
             if verbose:
-                print(f"   ❌ Failed to process {name}")
+                print(f"   ❌ Failed to process {name}", flush=True)
     return results
 
 

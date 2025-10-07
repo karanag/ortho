@@ -1,0 +1,386 @@
+{
+  "plane": {
+    "num_points3D": 3831,
+    "plane_normal": [
+      0.06770933676550914,
+      -0.2633598934024929,
+      -0.9623185606969257
+    ],
+    "plane_offset": 6.662782145344122,
+    "inliers": 3831,
+    "inlier_ratio": 1.0,
+    "height_stats": {
+      "mean_abs": 0.0108149464234835,
+      "p95_abs": 0.029988016072402424,
+      "max_abs": 0.0844221519575683
+    },
+    "reprojection_error_px": {
+      "mean": 0.6581807603430855,
+      "median": 0.5169948189393475,
+      "p90": 1.3085984133651727,
+      "max": 3.102453042729202
+    },
+    "per_image": [
+      {
+        "image": "1A.jpeg",
+        "points3D": 1468,
+        "plane_residual_mean": 0.01004361203056483,
+        "plane_residual_p95": 0.028829919060204198,
+        "plane_residual_max": 0.0844221519575683,
+        "camera_distance_to_plane": 6.705037391170623
+      },
+      {
+        "image": "3A.jpeg",
+        "points3D": 1844,
+        "plane_residual_mean": 0.010767223638025136,
+        "plane_residual_p95": 0.029539050866263447,
+        "plane_residual_max": 0.06958886568891742,
+        "camera_distance_to_plane": 6.807729177380219
+      },
+      {
+        "image": "1B.jpeg",
+        "points3D": 2076,
+        "plane_residual_mean": 0.010233772748536148,
+        "plane_residual_p95": 0.02883457841491599,
+        "plane_residual_max": 0.06905046567042117,
+        "camera_distance_to_plane": 6.703629959750072
+      },
+      {
+        "image": "2A.jpeg",
+        "points3D": 3029,
+        "plane_residual_mean": 0.010706445095541296,
+        "plane_residual_p95": 0.029872305677370283,
+        "plane_residual_max": 0.0844221519575683,
+        "camera_distance_to_plane": 6.603168450414713
+      },
+      {
+        "image": "3B.jpeg",
+        "points3D": 1655,
+        "plane_residual_mean": 0.01080044454152943,
+        "plane_residual_p95": 0.029751660261771905,
+        "plane_residual_max": 0.07404712443057271,
+        "camera_distance_to_plane": 6.77710959250484
+      },
+      {
+        "image": "2B.jpeg",
+        "points3D": 3206,
+        "plane_residual_mean": 0.010207848444092614,
+        "plane_residual_p95": 0.027147592895099493,
+        "plane_residual_max": 0.06958886568891742,
+        "camera_distance_to_plane": 6.380018300844265
+      }
+    ]
+  },
+  "pairwise_alignment_before": [
+    {
+      "image_i": "3A.jpeg",
+      "image_j": "3B.jpeg",
+      "shift_x": 0.39378159233888255,
+      "shift_y": 0.009675036897874634,
+      "shift_mag": 0.393900430063133,
+      "phase_corr_response": 0.811880068359375,
+      "mae": 16.608095169067383,
+      "overlap_px": 2460523
+    },
+    {
+      "image_i": "3A.jpeg",
+      "image_j": "2A.jpeg",
+      "shift_x": 0.8984948011350298,
+      "shift_y": 0.3692842190284864,
+      "shift_mag": 0.9714235647183755,
+      "phase_corr_response": 0.8176837874549897,
+      "mae": 19.890518188476562,
+      "overlap_px": 2087538
+    },
+    {
+      "image_i": "3A.jpeg",
+      "image_j": "2B.jpeg",
+      "shift_x": 0.1669300938572178,
+      "shift_y": 0.02286084864294935,
+      "shift_mag": 0.16848820325427946,
+      "phase_corr_response": 0.70448643664519,
+      "mae": 21.45990753173828,
+      "overlap_px": 1715393
+    },
+    {
+      "image_i": "3A.jpeg",
+      "image_j": "1B.jpeg",
+      "shift_x": -1.0810890850447379,
+      "shift_y": 0.46308730042062507,
+      "shift_mag": 1.17609670419304,
+      "phase_corr_response": 0.5157393183237241,
+      "mae": 36.389739990234375,
+      "overlap_px": 640262
+    },
+    {
+      "image_i": "3A.jpeg",
+      "image_j": "1A.jpeg",
+      "shift_x": -1.9889023566789206,
+      "shift_y": -0.6629563460979853,
+      "shift_mag": 2.096483651554325,
+      "phase_corr_response": 0.4556353284007728,
+      "mae": 42.047481536865234,
+      "overlap_px": 477258
+    },
+    {
+      "image_i": "3B.jpeg",
+      "image_j": "2A.jpeg",
+      "shift_x": 0.12102329394394928,
+      "shift_y": -0.007757732252002825,
+      "shift_mag": 0.12127167883202293,
+      "phase_corr_response": 0.7363895951377021,
+      "mae": 20.77869415283203,
+      "overlap_px": 2013756
+    },
+    {
+      "image_i": "3B.jpeg",
+      "image_j": "2B.jpeg",
+      "shift_x": 0.010369598410989056,
+      "shift_y": 0.2425334871435325,
+      "shift_mag": 0.24275506371074373,
+      "phase_corr_response": 0.8307551127115885,
+      "mae": 17.664142608642578,
+      "overlap_px": 2416053
+    },
+    {
+      "image_i": "3B.jpeg",
+      "image_j": "1B.jpeg",
+      "shift_x": -0.9169789506651114,
+      "shift_y": -0.734968992748918,
+      "shift_mag": 1.175172249615029,
+      "phase_corr_response": 0.5401025867226683,
+      "mae": 33.421329498291016,
+      "overlap_px": 1083435
+    },
+    {
+      "image_i": "3B.jpeg",
+      "image_j": "1A.jpeg",
+      "shift_x": -1.0231845280607104,
+      "shift_y": -0.9925948517092138,
+      "shift_mag": 1.4255353794636085,
+      "phase_corr_response": 0.44747826006677416,
+      "mae": 38.955970764160156,
+      "overlap_px": 743381
+    },
+    {
+      "image_i": "2A.jpeg",
+      "image_j": "2B.jpeg",
+      "shift_x": -0.1431421467804057,
+      "shift_y": -0.1768431453286894,
+      "shift_mag": 0.22751521319385912,
+      "phase_corr_response": 0.8714562633514404,
+      "mae": 14.915647506713867,
+      "overlap_px": 1935250
+    },
+    {
+      "image_i": "2A.jpeg",
+      "image_j": "1B.jpeg",
+      "shift_x": -0.5471315545534026,
+      "shift_y": -0.10009033384858412,
+      "shift_mag": 0.5562113024003953,
+      "phase_corr_response": 0.7365498719392,
+      "mae": 24.716102600097656,
+      "overlap_px": 1137384
+    },
+    {
+      "image_i": "2A.jpeg",
+      "image_j": "1A.jpeg",
+      "shift_x": -0.30768994948886075,
+      "shift_y": -0.3217500358480265,
+      "shift_mag": 0.44519230741856275,
+      "phase_corr_response": 0.6663561508325229,
+      "mae": 29.39276695251465,
+      "overlap_px": 1164397
+    },
+    {
+      "image_i": "2B.jpeg",
+      "image_j": "1B.jpeg",
+      "shift_x": 0.08212776340042183,
+      "shift_y": -0.33100923073334343,
+      "shift_mag": 0.3410455693185816,
+      "phase_corr_response": 0.807596235148112,
+      "mae": 24.674711227416992,
+      "overlap_px": 1246984
+    },
+    {
+      "image_i": "2B.jpeg",
+      "image_j": "1A.jpeg",
+      "shift_x": -0.23851626198154463,
+      "shift_y": -0.7294946469557999,
+      "shift_mag": 0.7674975225802465,
+      "phase_corr_response": 0.6723745290497203,
+      "mae": 32.02113342285156,
+      "overlap_px": 783787
+    },
+    {
+      "image_i": "1B.jpeg",
+      "image_j": "1A.jpeg",
+      "shift_x": -0.12792529992850632,
+      "shift_y": 1.9620605049314008,
+      "shift_mag": 1.9662264130494895,
+      "phase_corr_response": 0.729972958087267,
+      "mae": 16.769485473632812,
+      "overlap_px": 1791477
+    }
+  ],
+  "pairwise_alignment_after": [],
+  "alignment_offsets": [],
+  "image_offsets": [
+    {
+      "image": "3A.jpeg",
+      "offset_x": 0.0,
+      "offset_y": 0.0
+    },
+    {
+      "image": "3B.jpeg",
+      "offset_x": 0.0,
+      "offset_y": 0.0
+    },
+    {
+      "image": "2A.jpeg",
+      "offset_x": 0.0,
+      "offset_y": 0.0
+    },
+    {
+      "image": "2B.jpeg",
+      "offset_x": 0.0,
+      "offset_y": 0.0
+    },
+    {
+      "image": "1B.jpeg",
+      "offset_x": 0.0,
+      "offset_y": 0.0
+    },
+    {
+      "image": "1A.jpeg",
+      "offset_x": 0.0,
+      "offset_y": 0.0
+    }
+  ],
+  "warp_model": "homography",
+  "seam_cost_model": "color",
+  "image_plane_uv": [
+    {
+      "image": "3A.jpeg",
+      "plane_u": -2.7424923249572144,
+      "plane_v": 2.026841095989216
+    },
+    {
+      "image": "3B.jpeg",
+      "plane_u": -2.046460376748758,
+      "plane_v": -2.5199957282339276
+    },
+    {
+      "image": "2A.jpeg",
+      "plane_u": -0.27778528062924,
+      "plane_v": 2.037851790443237
+    },
+    {
+      "image": "2B.jpeg",
+      "plane_u": -0.35484518242073504,
+      "plane_v": -1.5087255339042673
+    },
+    {
+      "image": "1B.jpeg",
+      "plane_u": 3.666820694787633,
+      "plane_v": -1.1109490376265256
+    },
+    {
+      "image": "1A.jpeg",
+      "plane_u": 3.943301232471915,
+      "plane_v": 2.008695420303317
+    }
+  ],
+  "image_order": [
+    "group0",
+    "group1"
+  ],
+  "original_image_order": [
+    "3A.jpeg",
+    "3B.jpeg",
+    "2A.jpeg",
+    "2B.jpeg",
+    "1B.jpeg",
+    "1A.jpeg"
+  ],
+  "canvas_size": [
+    3199,
+    4000
+  ],
+  "scale": 212.58959280438242,
+  "stripe_groups": [
+    {
+      "image": "3A.jpeg",
+      "group": 1,
+      "plane_u": -2.7424923249572144,
+      "plane_v": 2.026841095989216
+    },
+    {
+      "image": "3B.jpeg",
+      "group": 0,
+      "plane_u": -2.046460376748758,
+      "plane_v": -2.5199957282339276
+    },
+    {
+      "image": "2A.jpeg",
+      "group": 1,
+      "plane_u": -0.27778528062924,
+      "plane_v": 2.037851790443237
+    },
+    {
+      "image": "2B.jpeg",
+      "group": 0,
+      "plane_u": -0.35484518242073504,
+      "plane_v": -1.5087255339042673
+    },
+    {
+      "image": "1B.jpeg",
+      "group": 0,
+      "plane_u": 3.666820694787633,
+      "plane_v": -1.1109490376265256
+    },
+    {
+      "image": "1A.jpeg",
+      "group": 1,
+      "plane_u": 3.943301232471915,
+      "plane_v": 2.008695420303317
+    }
+  ],
+  "group_pair_alignment_before": [
+    {
+      "image_i": "group0",
+      "image_j": "group1",
+      "shift_x": -0.230924099719914,
+      "shift_y": 0.04892726962066263,
+      "shift_mag": 0.23605045550472,
+      "phase_corr_response": 0.7354844455295139,
+      "mae": 33.85909652709961,
+      "overlap_px": 4050117
+    }
+  ],
+  "group_alignment": {
+    "measured_shift_x": -0.230924099719914,
+    "measured_shift_y": 0.04892726962066263,
+    "applied_shift_x": 0.230924099719914,
+    "applied_shift_y": -0.04892726962066263,
+    "shift_mag": 0.23605045550472,
+    "phase_corr_response": 0.7354844455295139,
+    "overlap_px": 4050117
+  },
+  "group_pair_alignment_after": [],
+  "seam_records": [
+    {
+      "seam_cost": 7.3819990158081055,
+      "gradient_cost": 0.0,
+      "overlap_px": 4050117,
+      "roi_width": 2872,
+      "roi_height": 1953,
+      "pair": [
+        "group0",
+        "group1"
+      ],
+      "mode": "stripe",
+      "cost_model": "color"
+    }
+  ]
+}
