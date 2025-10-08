@@ -1,7 +1,7 @@
 import time
 import warnings
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Union
 
 import cv2
 import numpy as np
@@ -13,12 +13,21 @@ try:
 except Exception:
     pass
 
-DEFAULT_TOKEN_PATH = "/Users/karan/development/Projects/Ortho/photoroom.txt"
+DEFAULT_TOKEN_PATH: Optional[Union[str, Path]] = None
 
 
-def load_token(token_file: str = DEFAULT_TOKEN_PATH) -> str:
+def _ensure_token_path(token_file: Optional[Union[str, Path]]) -> Path:
+    if token_file is None:
+        raise ValueError(
+            "Photoroom API token path is not set. Provide --bg-token-file or pass token explicitly."
+        )
+    return Path(token_file)
+
+
+def load_token(token_file: Optional[Union[str, Path]] = DEFAULT_TOKEN_PATH) -> str:
     """Read API token from a file"""
-    with open(token_file, "r") as f:
+    path = _ensure_token_path(token_file)
+    with path.open("r", encoding="utf-8") as f:
         return f.read().strip()
 
 
@@ -26,7 +35,7 @@ def remove_background_image(
     image_bgr: np.ndarray,
     *,
     token: Optional[str] = None,
-    token_file: str = DEFAULT_TOKEN_PATH,
+    token_file: Optional[Union[str, Path]] = DEFAULT_TOKEN_PATH,
     retries: int = 2,
     delay: float = 2.0,
     timeout: float = 60.0,
@@ -73,7 +82,7 @@ def remove_background_batch(
     names: Optional[Sequence[str]] = None,
     *,
     token: Optional[str] = None,
-    token_file: str = DEFAULT_TOKEN_PATH,
+    token_file: Optional[Union[str, Path]] = DEFAULT_TOKEN_PATH,
     retries: int = 2,
     delay: float = 2.0,
     timeout: float = 60.0,
@@ -128,7 +137,7 @@ def remove_background_batch(
 def remove_background_photoroom(
     src,
     dst="no_bg_photoroom",
-    token_file: str = DEFAULT_TOKEN_PATH,
+    token_file: Optional[Union[str, Path]] = DEFAULT_TOKEN_PATH,
     retries: int = 2,
     delay: float = 2,
 ):

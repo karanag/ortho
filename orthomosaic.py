@@ -6,6 +6,8 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import cv2
 import pycolmap
+from auto_blend_optimizer import auto_optimize_blend, AutoBlendParams
+
 
 def _depth_path_candidates(depth_dir: Path, image_name: str) -> List[Path]:
     stem = Path(image_name).stem
@@ -119,7 +121,15 @@ def _ensure_binary(m):
     m = cv2.threshold(m, 1, 255, cv2.THRESH_BINARY)[1]
     return m.astype(np.uint8)
 
-def compute_seam_masks_lowres(images_u8, masks_u8, scale=0.3, seam_method='graphcut', debug_dir: Optional[Path]=None):
+def compute_seam_masks_lowres(
+    images_u8,
+    masks_u8,
+    scale=0.3,
+    seam_method='graphcut',
+    seam_cost: str='color',
+    seam_gradient_weight: float=0.0,
+    debug_dir: Optional[Path]=None
+):
     """
     images_u8: list of 8-bit BGR tiles already reprojected to a *single plane* (true ortho)
     masks_u8:  list of 8-bit 0/255 valid-region masks for each tile
@@ -137,10 +147,19 @@ def compute_seam_masks_lowres(images_u8, masks_u8, scale=0.3, seam_method='graph
         imgs_s.append(cv2.resize(img.astype(np.float32), (nw, nh)))
         msks_s.append(cv2.resize(_ensure_binary(m), (nw, nh), interpolation=cv2.INTER_NEAREST))
         full_sizes.append((ih, iw))
-    if seam_method.lower().startswith('dp'):
-        seam_finder = cv2.detail_DpSeamFinder('COLOR')
+    seam_method = (seam_method or 'graphcut').lower()
+    seam_cost = (seam_cost or 'color').lower()
+    use_gradient = seam_cost == 'gradient' and seam_gradient_weight > 0.0
+    if seam_method.startswith('dp'):
+        cost_mode = 'COLOR_GRAD' if use_gradient else 'COLOR'
+        seam_finder = cv2.detail_DpSeamFinder(cost_mode)
+        try:
+            seam_finder.setCostFunction(cost_mode)
+        except Exception:
+            pass
     else:
-        seam_finder = cv2.detail_GraphCutSeamFinder('COST_COLOR_GRAD')
+        cost_mode = 'COST_COLOR_GRAD' if use_gradient else 'COST_COLOR'
+        seam_finder = cv2.detail_GraphCutSeamFinder(cost_mode)
     corners = [(0, 0)] * len(imgs_s)
     seam_masks_small = seam_finder.find(imgs_s, corners, msks_s)
     seam_masks_full = []
@@ -178,11 +197,19 @@ def blend_fullres_with_masks(images_u8, seam_masks_u8, blender='multiband', band
     mos_mask = _ensure_binary(mos_mask)
     return (mosaic, mos_mask)
 
-def seamhybrid_ortho_blend(images_u8, masks_u8, seam_scale=0.3, seam_method='graphcut', blender='multiband', bands=4, feather_sharpness=0.02, do_exposure=True, debug_dir: Optional[Path]=None):
+def seamhybrid_ortho_blend(images_u8, masks_u8, seam_scale=0.3, seam_method='graphcut', seam_cost: str='color', seam_gradient_weight: float=0.0, blender='multiband', bands=4, feather_sharpness=0.02, do_exposure=True, debug_dir: Optional[Path]=None):
     """
     Convenience wrapper: find seams fast at low-res, upscale, then blend at full-res.
     """
-    seam_masks = compute_seam_masks_lowres(images_u8, masks_u8, scale=seam_scale, seam_method=seam_method, debug_dir=debug_dir)
+    seam_masks = compute_seam_masks_lowres(
+        images_u8,
+        masks_u8,
+        scale=seam_scale,
+        seam_method=seam_method,
+        seam_cost=seam_cost,
+        seam_gradient_weight=seam_gradient_weight,
+        debug_dir=debug_dir,
+    )
     mosaic, mos_mask = blend_fullres_with_masks(images_u8, seam_masks, blender=blender, bands=bands, feather_sharpness=feather_sharpness, do_exposure=do_exposure)
     return (mosaic, mos_mask)
 
@@ -220,7 +247,7 @@ def homography_img_to_plane(K: np.ndarray, R_wc: np.ndarray, t_wc: np.ndarray, X
     H_i2p = np.linalg.inv(H_p2i)
     return H_i2p
 
-def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path, sfm_dir: Path, mosaic_path: Path, target_max_size_px: int=8000, blend_mode: str='feather', num_bands: int=6, flow_refine: bool=True, flow_method: str='farneback_slow', flow_downscale: float=1.0, flow_max_px: float=2.5, flow_smooth_ksize: int=13, split_stripes: bool=False, stripe_threshold: float=0.5, stripe_flow_max_px: float=6.0, warp_model: str='homography', apap_cell_size: int=80, apap_sigma: float=120.0, apap_min_weight: float=0.0001, apap_regularization: float=0.05, seam_cost: str='color', seam_gradient_weight: float=8.0, debug_dir: Optional[Path]=None, feather_sharpness: float=0.02, seam_scale: float=0.3, seam_method: str='graphcut', remove_background: bool=False, background_token_file: Optional[Path]=None, background_retries: int=2, background_retry_delay: float=2.0, color_harmonize: bool=False, harmonize_output_dir: Optional[Path]=None):
+def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path, sfm_dir: Path, mosaic_path: Path, target_max_size_px: int=8000, blend_mode: str='feather', num_bands: int=6, flow_refine: bool=True, flow_method: str='farneback_slow', flow_downscale: float=1.0, flow_max_px: float=2.5, flow_smooth_ksize: int=13, split_stripes: bool=False, stripe_threshold: float=0.5, stripe_flow_max_px: float=6.0, warp_model: str='homography', apap_cell_size: int=80, apap_sigma: float=120.0, apap_min_weight: float=0.0001, apap_regularization: float=0.05, seam_cost: str='color', seam_gradient_weight: float=8.0, debug_dir: Optional[Path]=None, feather_sharpness: float=0.02, seam_scale: float=0.3, seam_method: str='graphcut', remove_background: bool=False, background_token_file: Optional[Path]=None, background_retries: int=2, background_retry_delay: float=2.0, color_harmonize: bool=False, harmonize_output_dir: Optional[Path]=None,auto_blend: bool = False):
     rec = pycolmap.Reconstruction(str(sfm_dir))
     pts = [p.xyz for _, p in rec.points3D.items()]
     X = np.array(pts, dtype=float)
@@ -379,6 +406,9 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
     use_multiband = blend_mode == 'multiband'
     flow_downscale = float(max(flow_downscale, 0.001))
     blender = None
+
+
+
     if use_multiband:
         try:
             blender = cv2.detail_MultiBandBlender()
@@ -768,6 +798,43 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
             max_dev = deviation.get('max', 0.0)
             roi = rec.get('roi')
             print(f'  {image_label}: mode={mode}, corr_used={corr_used}, mean_dev={mean_dev:.3f}px, max_dev={max_dev:.3f}px, roi={roi}')
+    
+    # >>> AUTO-BLEND EARLY EXIT (after warps/masks are ready, before any seam/blend code) >>>
+    if auto_blend and warps and masks:
+        auto_dir = (debug_dir / "auto_opt") if debug_dir is not None else None
+        try:
+            from auto_blend_optimizer import auto_optimize_blend, AutoBlendParams
+            base = AutoBlendParams(
+                seam_method=seam_method,
+                bands=int(num_bands),
+                seam_scale=seam_scale,
+                seam_cost=seam_cost,
+                seam_gradient_weight=seam_gradient_weight,
+                flow_enable=flow_refine,
+                flow_method=flow_method,
+                flow_max_px=flow_max_px,
+                flow_smooth_ksize=flow_smooth_ksize,
+            )
+            if hasattr(AutoBlendParams, "seam_scales"):
+                base.seam_scales = (0.5, 0.4)
+            if hasattr(base, "candidate_timeout_s"):
+                base.candidate_timeout_s = 90
+            mosaic_rgb, auto_report = auto_optimize_blend(
+                warps,
+                masks,
+                debug_dir=auto_dir,
+                try_flow=False,
+                base_params=base
+            )
+            mosaic_bgr = cv2.cvtColor(mosaic_rgb, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(str(mosaic_path), mosaic_bgr)
+            print(f"[AUTO] Saved orthomosaic to {mosaic_path}")
+            return
+        except Exception as e:
+            print(f"[AUTO] Optimizer failed ({e}); falling back to manual blend.")
+    # <<< AUTO-BLEND EARLY EXIT <<<
+
+    
     plane_vs = np.array(plane_v_list, dtype=float) if plane_v_list else np.empty(0, dtype=float)
     groups = np.zeros(len(plane_vs), dtype=int)
     split_mode = False
@@ -845,7 +912,19 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
             seam_dir = debug_dir / f'{group_label}_seams_lowres'
         try:
             subset_warps_bgr = [cv2.cvtColor(w, cv2.COLOR_RGB2BGR) for w in subset_warps_rgb]
-            mosaic_bgr, mos_mask = seamhybrid_ortho_blend(subset_warps_bgr, [m.copy() for m in subset_masks], seam_scale=seam_scale, seam_method=seam_method, blender='multiband', bands=3, feather_sharpness=feather_sharpness, do_exposure=False, debug_dir=seam_dir)
+            mosaic_bgr, mos_mask = seamhybrid_ortho_blend(
+                subset_warps_bgr,
+                [m.copy() for m in subset_masks],
+                seam_scale=seam_scale,
+                seam_method=seam_method,
+                seam_cost=seam_cost,
+                seam_gradient_weight=seam_gradient_weight,
+                blender='multiband',
+                bands=3,
+                feather_sharpness=feather_sharpness,
+                do_exposure=False,
+                debug_dir=seam_dir,
+            )
             mosaic_rgb = cv2.cvtColor(mosaic_bgr, cv2.COLOR_BGR2RGB)
             return (mosaic_rgb.astype(np.uint8), _ensure_binary(mos_mask))
         except Exception as e:
@@ -1271,7 +1350,19 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
         mosaic = None
         mos_mask = None
         try:
-            mosaic_bgr, mos_mask = seamhybrid_ortho_blend(warps_bgr, masks_for_seams, seam_scale=seam_scale, seam_method=seam_method, blender='multiband', bands=bands_for_hybrid, feather_sharpness=feather_sharpness, do_exposure=False, debug_dir=seam_debug_dir)
+            mosaic_bgr, mos_mask = seamhybrid_ortho_blend(
+                warps_bgr,
+                masks_for_seams,
+                seam_scale=seam_scale,
+                seam_method=seam_method,
+                seam_cost=seam_cost,
+                seam_gradient_weight=seam_gradient_weight,
+                blender='multiband',
+                bands=bands_for_hybrid,
+                feather_sharpness=feather_sharpness,
+                do_exposure=False,
+                debug_dir=seam_debug_dir,
+            )
             mosaic = cv2.cvtColor(mosaic_bgr, cv2.COLOR_BGR2RGB)
         except Exception as e:
             print(f'Hybrid seam blend failed ({e}); falling back to weighted average.')

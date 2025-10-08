@@ -2,6 +2,7 @@
 import argparse
 import os
 import shutil
+import shlex
 from pathlib import Path
 from typing import Optional
 
@@ -33,10 +34,12 @@ def pick_matching_flags(colmap: str) -> list[str]:
 
 
 def run(cmd: list[str]):
-    print("Running:", " ".join(cmd))
-    code = os.system(" ".join(cmd))
-    if code != 0:
-        raise SystemExit(f"Command failed with exit code {code}: {' '.join(cmd)}")
+    printable = " ".join(shlex.quote(arg) for arg in cmd)
+    print("Running:", printable)
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit(f"Command failed with exit code {exc.returncode}: {printable}") from exc
 
 
 def select_best_reconstruction(sparse_dir: Path) -> tuple[Path, tuple[int, int]]:
@@ -115,6 +118,7 @@ def main():
     parser.add_argument("--bg-token-file", type=Path, default=None, help="Path to file containing the Photoroom API token.")
     parser.add_argument("--bg-retries", type=int, default=2, help="Retry attempts for Photoroom API calls.")
     parser.add_argument("--bg-retry-delay", type=float, default=2.0, help="Delay (seconds) between Photoroom retry attempts.")
+    parser.add_argument("--auto", action="store_true",help="Use automatic photometric + seam/blend optimizer and skip manual path.")
     parser.add_argument("--color-harmonize", action="store_true", help="Run auto color harmonization on warped tiles before blending.")
     parser.add_argument("--no-color-harmonize", action="store_true", help="Disable harmonization even if enabled by other flags.")
     parser.add_argument("--harmonize-out", type=Path, default=None, help="Directory to store harmonization stages (defaults to debug-dir/harmonized_auto).")
@@ -233,6 +237,7 @@ def main():
         background_retry_delay=args.bg_retry_delay,
         color_harmonize=color_harmonize_flag,
         harmonize_output_dir=args.harmonize_out,
+        auto_blend=args.auto,
     )
 
     print("\nDone. Outputs:")

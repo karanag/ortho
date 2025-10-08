@@ -1,31 +1,36 @@
 #!/bin/bash
 
-# This script executes the COLMAP orthomosaic pipeline and saves all console output.
-# The 'set -e' command ensures that the script will exit immediately if any command fails.
-set -e
+# Re-run the GraphCut pipeline exactly as validated in the CLI session.
+# 1) Quick non-AUTO blend (fast sanity check, 3000px mosaic)
+# 2) AUTO blend with candidate timeouts (rebuilds outputs with --fresh)
+set -euo pipefail
 
-echo ">>> Starting the orthomosaic pipeline..."
-echo ">>> All output will be saved to console_log.txt"
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
 
-# Execute the main python script and redirect both stdout and stderr to the log file.
-python3 -u main.py \
-  --images ./images/3 \
-  --out out \
-  --fresh \
-  --exhaustive \
-  --blend seamhybrid \
-  --bands 4 \
-  --seam-scale 0.30 \
-  --seam-method graphcut \
-  --flow-max-px 4 \
-  --stripe-flow-max-px 12 \
-  --debug-dir out \
-  --flow-method farneback_slow \
-  --flow-downscale 0.5 \
-  --flow-smooth-ksize 21 \
-  --remove-bg \
-  --color-harmonize \
-  --bg-token-file ./photoroom.txt \
-  > console_log.txt 2>&1
+QUICK_LOG="console_log_quick.txt"
+AUTO_LOG="console_log_auto.txt"
 
-echo ">>> Pipeline finished.. Check console_log.txt for the full output."
+# Common configuration shared by both runs.
+COMMON_ARGS=(
+  --images ./images/2
+  --out out
+  --exhaustive
+  --blend seamhybrid
+  --bands 3
+  --seam-scale 0.50
+  --seam-method graphcut
+  --no-flow-refine
+  --max_mosaic_px 3000
+  --debug-dir out
+)
+
+echo ">>> Starting quick GraphCut run (no AUTO)..."
+echo ">>> Logging to ${QUICK_LOG}"
+python3 -u main.py --fresh "${COMMON_ARGS[@]}" >"${QUICK_LOG}" 2>&1
+echo ">>> Quick run finished."
+
+echo
+echo ">>> Starting AUTO run (graphcut search with timeouts)..."
+echo ">>> Logging to ${AUTO_LOG}"
+python3 -u main.py --fresh "${COMMON_ARGS[@]}" --auto >"${AUTO_LOG}" 2>&1
+echo ">>> AUTO run finished. Final mosaic at out/orthomosaic_colmap.png"
