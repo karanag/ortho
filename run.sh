@@ -12,7 +12,7 @@ AUTO_LOG="console_log_auto.txt"
 
 # Common configuration shared by both runs.
 COMMON_ARGS=(
-  --images ./images/2
+  --images ./images/3
   --out out
   --exhaustive
   --blend seamhybrid
