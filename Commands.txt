@@ -59,3 +59,10 @@ colmap model_converter \
     --input_path ./dense/sparse \
     --output_path ./dense/sparse_txt \
     --output_type TXT
+
+
+
+
+python run_exposure.py \
+  --input /Users/karan/development/Projects/ortho/orthomosaic_colmap.png \
+  --output /Users/karan/development/Projects/ortho/exposure_corrected.png
