@@ -144,8 +144,8 @@ def compute_seam_masks_lowres(
     for img, m in zip(images_u8, masks_u8):
         ih, iw = img.shape[:2]
         nw, nh = (int(iw * scale), int(ih * scale))
-        imgs_s.append(cv2.resize(img.astype(np.float32), (nw, nh)))
-        msks_s.append(cv2.resize(_ensure_binary(m), (nw, nh), interpolation=cv2.INTER_NEAREST))
+        imgs_s.append(cv2.resize(img.astype(np.float32), (nw, nh), interpolation=cv2.INTER_LANCZOS4))
+        msks_s.append(cv2.resize(_ensure_binary(m), (nw, nh), interpolation=cv2.INTER_LINEAR))
         full_sizes.append((ih, iw))
     seam_method = (seam_method or 'graphcut').lower()
     seam_cost = (seam_cost or 'color').lower()
@@ -173,7 +173,7 @@ def compute_seam_masks_lowres(
             cv2.imwrite(str(out_path), full_mask)
     return [_ensure_binary(m) for m in seam_masks_full]
 
-def blend_fullres_with_masks(images_u8, seam_masks_u8, blender='multiband', bands=4, feather_sharpness=0.02, do_exposure=True):
+def blend_fullres_with_masks(images_u8, seam_masks_u8, blender='multiband', bands=4, feather_sharpness=0.01, do_exposure=True):
     """
     Blend full-res ortho tiles using *fixed* seam masks.
     Returns: (mosaic_u8, mosaic_mask_u8)
@@ -185,7 +185,7 @@ def blend_fullres_with_masks(images_u8, seam_masks_u8, blender='multiband', band
         comp = cv2.detail.ExposureCompensator_createDefault(cv2.detail.ExposureCompensator_GAIN_BLOCKS)
         comp.feed(corners, [img.astype(np.int16) for img in images_u8], seam_masks_u8)
     b = cv2.detail_MultiBandBlender()
-    b.setNumBands(bands)
+    b.setNumBands(max(6, bands))
     b.prepare((0, 0, w, h))
     for i, (img, m) in enumerate(zip(images_u8, seam_masks_u8)):
         m = _ensure_binary(m)
@@ -492,14 +492,14 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
         fallback_info: Dict[str, object] = {'mode': 'homography_fallback', 'roi': None, 'corr_total': int(corr_mosaic.shape[0]) if corr_mosaic is not None else 0}
         roi_info = _compute_roi_from_homography(H_img_to_mosaic, image_rgb.shape[:2])
         if roi_info is None:
-            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
             mask = (warped.sum(axis=2) > 0).astype(np.uint8) * 255
             fallback_info['mode'] = 'homography_invalid_roi'
             return (warped, mask, fallback_info)
         roi_x0, roi_y0, roi_x1, roi_y1, mosaic_corners = roi_info
         fallback_info['roi'] = [roi_x0, roi_y0, roi_x1, roi_y1]
         if corr_mosaic is None or corr_image is None or len(corr_mosaic) < 4:
-            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
             mask = (warped.sum(axis=2) > 0).astype(np.uint8) * 255
             fallback_info['mode'] = 'homography_no_corr'
             return (warped, mask, fallback_info)
@@ -510,7 +510,7 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
         corr_mosaic_local = corr_mosaic[within]
         corr_image_local = corr_image[within]
         if corr_mosaic_local.shape[0] < 4:
-            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
             mask = (warped.sum(axis=2) > 0).astype(np.uint8) * 255
             fallback_info['mode'] = 'homography_sparse_corr'
             fallback_info['corr_used'] = int(corr_mosaic_local.shape[0])
@@ -564,7 +564,7 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
                 vertex_mask[iy, ix] = 1
         apap_used = vertex_mask.sum()
         if apap_used == 0:
-            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+            warped = cv2.warpPerspective(image_rgb, H_img_to_mosaic, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
             mask = (warped.sum(axis=2) > 0).astype(np.uint8) * 255
             fallback_info['mode'] = 'homography_no_vertices'
             fallback_info['corr_used'] = int(corr_mosaic_local.shape[0])
@@ -614,8 +614,9 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
                         map_y[y_index, x_index] = float(top_y * (1 - ty) + bottom_y * ty)
                         apap_mask_roi[y_index, x_index] = 1
         src_mask = np.ones(image_rgb.shape[:2], dtype=np.uint8) * 255
-        warped_roi = cv2.remap(image_rgb, map_x, map_y, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
-        mask_roi = cv2.remap(src_mask, map_x, map_y, interpolation=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+        warped_roi = cv2.remap(image_rgb, map_x, map_y, interpolation=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+        mask_roi = cv2.remap(src_mask, map_x, map_y, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+        mask_roi = _ensure_binary(mask_roi)
         warped_full = np.zeros((out_h, out_w, 3), dtype=np.uint8)
         mask_full = np.zeros((out_h, out_w), dtype=np.uint8)
         warped_full[roi_y0:roi_y1, roi_x0:roi_x1] = warped_roi
@@ -655,12 +656,12 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
                     apap_info['height_stats'] = {'mean': float(np.mean(heights)), 'mean_abs': float(np.mean(np.abs(heights))), 'p90_abs': float(np.percentile(np.abs(heights), 90)), 'max_abs': float(np.max(np.abs(heights)))}
             apap_diagnostics.append(apap_info)
         else:
-            warped = cv2.warpPerspective(img, Hi, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+            warped = cv2.warpPerspective(img, Hi, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
             mask = (warped.sum(axis=2) > 0).astype(np.uint8) * 255
         if mask.max() == 0:
             continue
         try:
-            k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+            k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
             mask = cv2.erode(mask, k)
         except Exception:
             pass
@@ -936,7 +937,7 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
             warped = warp_list[idx].astype(np.float32)
             mask = _ensure_binary(mask_list[idx])
             union_mask = cv2.bitwise_or(union_mask, mask)
-            dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
+            dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 3)
             w = dist / (dist.max() + 1e-06) if dist.max() > 0 else (mask > 0).astype(np.float32)
             acc += warped * w[..., None]
             wsum += w
@@ -1084,10 +1085,10 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
                 if abs(dx) < 1e-06 and abs(dy) < 1e-06:
                     continue
                 M = np.float32([[1, 0, dx], [0, 1, dy]])
-                warps[idx] = cv2.warpAffine(warps[idx], M, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+                warps[idx] = cv2.warpAffine(warps[idx], M, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
                 masks[idx] = cv2.warpAffine(masks[idx], M, (out_w, out_h), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
                 raw_masks[idx] = cv2.warpAffine(raw_masks[idx], M, (out_w, out_h), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
-                warp_grays[idx] = cv2.warpAffine(warp_grays[idx], M, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+                warp_grays[idx] = cv2.warpAffine(warp_grays[idx], M, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
                 masks[idx] = np.where(masks[idx] > 0, 255, 0).astype(np.uint8)
                 raw_masks[idx] = np.where(raw_masks[idx] > 0, 255, 0).astype(np.uint8)
             for i, j, applied_x, applied_y, weight, response, overlap in edges:
@@ -1153,10 +1154,10 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
                 dx = -res['shift_x']
                 dy = -res['shift_y']
                 M = np.float32([[1, 0, dx], [0, 1, dy]])
-                group_warps[1] = cv2.warpAffine(group_warps[1], M, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
+                group_warps[1] = cv2.warpAffine(group_warps[1], M, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
                 group_masks[1] = cv2.warpAffine(group_masks[1], M, (out_w, out_h), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
                 group_masks[1] = np.where(group_masks[1] > 0, 255, 0).astype(np.uint8)
-                group_grays[1] = cv2.warpAffine(group_grays[1], M, (out_w, out_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+                group_grays[1] = cv2.warpAffine(group_grays[1], M, (out_w, out_h), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
                 group_alignment_record = {'measured_shift_x': res['shift_x'], 'measured_shift_y': res['shift_y'], 'applied_shift_x': dx, 'applied_shift_y': dy, 'shift_mag': res['shift_mag'], 'phase_corr_response': res['phase_corr_response'], 'overlap_px': res['overlap_px']}
         warps = group_warps
         masks = [m.copy() for m in group_masks]
@@ -1275,7 +1276,7 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
         yy, xx = np.mgrid[0:cur_img.shape[0], 0:cur_img.shape[1]].astype(np.float32)
         map_x = xx + full_flow[..., 0] * (cur_mask > 0)
         map_y = yy + full_flow[..., 1] * (cur_mask > 0)
-        warped = cv2.remap(cur_img, map_x, map_y, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+        warped = cv2.remap(cur_img, map_x, map_y, interpolation=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_REFLECT)
         return warped
     if split_mode and use_multiband and (blender is not None) and (len(warps) >= 2):
         try:
@@ -1369,7 +1370,7 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
             acc = np.zeros((out_h, out_w, 3), dtype=np.float64)
             wsum = np.zeros((out_h, out_w), dtype=np.float64)
             for warped, mask in zip(warps, masks):
-                dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
+                dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 3)
                 w = dist / (dist.max() + 1e-06) if dist.max() > 0 else (mask > 0).astype(np.float32)
                 acc += warped.astype(np.float64) * w[..., None]
                 wsum += w
@@ -1419,7 +1420,7 @@ def build_orthomosaic(undistorted_sparse_dir: Path, undistorted_images_dir: Path
         acc = np.zeros((out_h, out_w, 3), dtype=np.float64)
         wsum = np.zeros((out_h, out_w), dtype=np.float64)
         for warped, mask in zip(warps, masks):
-            dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 5)
+            dist = cv2.distanceTransform((mask > 0).astype(np.uint8), cv2.DIST_L2, 3)
             w = dist / (dist.max() + 1e-06) if dist.max() > 0 else (mask > 0).astype(np.float32)
             acc += warped.astype(np.float64) * w[..., None]
             wsum += w
