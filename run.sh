@@ -24,10 +24,10 @@ COMMON_ARGS=(
   --debug-dir out
 )
 
-echo ">>> Starting quick GraphCut run (no AUTO)..."
-echo ">>> Logging to ${QUICK_LOG}"
-python3 -u main.py --fresh "${COMMON_ARGS[@]}" >"${QUICK_LOG}" 2>&1
-echo ">>> Quick run finished."
+# echo ">>> Starting quick GraphCut run (no AUTO)..."
+# echo ">>> Logging to ${QUICK_LOG}"
+# python3 -u main.py --fresh "${COMMON_ARGS[@]}" >"${QUICK_LOG}" 2>&1
+# echo ">>> Quick run finished."
 
 echo
 echo ">>> Starting AUTO run (graphcut search with timeouts)..."
